@@ -111,6 +111,36 @@ if (!window.THREE) {
     "Không tải được đồ họa 3D. Em hãy kiểm tra kết nối Internet rồi tải lại trang.";
 } else {
 const scene = new THREE.Scene();
+// HIỆU ỨNG TUYẾT RƠI
+const snowGeometry = new THREE.BufferGeometry();
+const snowCount = 700;
+const snowPositions = new Float32Array(snowCount * 3);
+const snowSpeeds = [];
+
+for (let i = 0; i < snowCount; i++) {
+  snowPositions[i * 3] = (Math.random() - 0.5) * 35;
+  snowPositions[i * 3 + 1] = Math.random() * 20;
+  snowPositions[i * 3 + 2] = (Math.random() - 0.5) * 65;
+  snowSpeeds.push(2 + Math.random() * 4);
+}
+
+snowGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(snowPositions, 3)
+);
+
+const snowParticles = new THREE.Points(
+  snowGeometry,
+  new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 0.12,
+    transparent: true,
+    opacity: 0.9,
+    sizeAttenuation: true
+  })
+);
+
+scene.add(snowParticles);
 scene.background = new THREE.Color(0x8ce3f4);
 scene.fog = new THREE.Fog(0x8ce3f4, 35, 100);
 
@@ -256,15 +286,17 @@ function createFloe(x,z,weak=false) {
  box(g,0,-0.19,0,1.65,0.18,1.75,darkIce);
  // Snowy top surface
  box(g,0,0.19,0,1.72,0.08,1.83,snow);
- if(weak) {
-   // Visible dark cracks on the weak floe
-   const cm=mat(0x177baf);
-   const c1=box(g,0,0.245,0,0.045,0.015,1.4,cm);
-   c1.rotation.y=0.45;
-   const c2=box(g,0,0.25,0,0.045,0.015,1.15,cm);
-   c2.rotation.y=-0.65;
-   cracks.push({group:g,lines:[c1,c2]});
- }
+if (weak) {
+  // Chỉ để một vết nứt tự nhiên, không tạo dấu X
+  const crackMat = mat(0x177baf);
+  const crack = box(
+    g, 0, 0.245, 0,
+    0.035, 0.015, 1.0,
+    crackMat
+  );
+
+  crack.rotation.y = 0.25;
+}
  scene.add(g);
  floes.push({group:g,weak,sunk:false});
  return g;
@@ -503,6 +535,20 @@ function animate() {
  requestAnimationFrame(animate);
  const dt=clock.getDelta();
  const time=clock.elapsedTime;
+ // Cho tuyết rơi liên tục
+const positions = snowGeometry.attributes.position.array;
+
+for (let i = 0; i < snowCount; i++) {
+  positions[i * 3 + 1] -= snowSpeeds[i] * dt;
+
+  if (positions[i * 3 + 1] < -2) {
+    positions[i * 3 + 1] = 18;
+    positions[i * 3] = (Math.random() - 0.5) * 35;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 65;
+  }
+}
+
+snowGeometry.attributes.position.needsUpdate = true;
 
  if(mother) {
    if(jumpData) {
