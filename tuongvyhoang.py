@@ -140,6 +140,36 @@ const snowParticles = new THREE.Points(
 );
 
 scene.add(snowParticles);
+// HIỆU ỨNG TUYẾT RƠI
+const snowGeometry = new THREE.BufferGeometry();
+const snowCount = 700;
+const snowPositions = new Float32Array(snowCount * 3);
+const snowSpeeds = [];
+
+for (let i = 0; i < snowCount; i++) {
+  snowPositions[i * 3] = (Math.random() - 0.5) * 35;
+  snowPositions[i * 3 + 1] = Math.random() * 20;
+  snowPositions[i * 3 + 2] = (Math.random() - 0.5) * 65;
+  snowSpeeds.push(2 + Math.random() * 4);
+}
+
+snowGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(snowPositions, 3)
+);
+
+const snowParticles = new THREE.Points(
+  snowGeometry,
+  new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 0.12,
+    transparent: true,
+    opacity: 0.9,
+    sizeAttenuation: true
+  })
+);
+
+scene.add(snowParticles);
 scene.background = new THREE.Color(0x8ce3f4);
 scene.fog = new THREE.Fog(0x8ce3f4, 35, 100);
 
@@ -534,6 +564,20 @@ function animate() {
  requestAnimationFrame(animate);
  const dt=clock.getDelta();
  const time=clock.elapsedTime;
+ // Cho tuyết rơi liên tục
+const positions = snowGeometry.attributes.position.array;
+
+for (let i = 0; i < snowCount; i++) {
+  positions[i * 3 + 1] -= snowSpeeds[i] * dt;
+
+  if (positions[i * 3 + 1] < -2) {
+    positions[i * 3 + 1] = 18;
+    positions[i * 3] = (Math.random() - 0.5) * 35;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 65;
+  }
+}
+
+snowGeometry.attributes.position.needsUpdate = true;
  // Cho tuyết rơi liên tục
 const positions = snowGeometry.attributes.position.array;
 
