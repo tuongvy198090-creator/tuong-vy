@@ -223,18 +223,30 @@ function updateHud(){
  document.getElementById('progress').textContent=stage===1?`Câu ${Math.min(row+1,5)}/5`:`Hàng ${Math.min(returnRow+1,5)}/5`;
  document.getElementById('danger').textContent=`⚠️ Băng yếu: ${weakHits}/3`;
 }
-function setAnswers(){
- const q=questions[row];
- document.getElementById('question').textContent=q.q;
- const ans=document.getElementById('answers');ans.innerHTML='';
- q.a.forEach((txt,i)=>{
-  const b=document.createElement('button');
-  b.className='answer';b.textContent=txt;
-  b.onclick=()=>chooseAnswer(i);
-  ans.appendChild(b);
- });
- updateHud();
+
+function chooseAnswer(i){
+ if(stage !== 1 || locked || moving) return;
+
+ locked = true;
+ const target = tiles.find(t =>
+   t.lane === i && Math.abs(t.z - (-row * 7 - 2)) < 0.2
+ );
+
+ if(!target){
+   locked = false;
+   return;
+ }
+
+ jumpStart = mother.position.clone();
+ jumpEnd = new THREE.Vector3(target.x, 0, target.z);
+ jumpT = 0;
+ jumping = true;
+ moving = true;
+
+ const wall = walls.find(w => w.index === row);
+ if(wall) wall.down = true;
 }
+
 function notice(title,text,button,action){
  document.getElementById('noticeTitle').textContent=title;
  document.getElementById('noticeText').textContent=text;
@@ -252,14 +264,30 @@ function startGame(){
  for(let r=0;r<5;r++)buildQuestionRow(r);
  locked=false;setAnswers();
 }
+setAnswers()
 function chooseAnswer(i){
- if(stage!==1||locked)return;
- locked=true;
- const q=questions[row];
- if(i!==q.c){
-  document.getElementById('question').textContent='Chưa đúng rồi! Hãy chọn lại nhé.';
-  locked=false;return;
+ if(stage !== 1 || locked || moving) return;
+
+ locked = true;
+ const target = tiles.find(t =>
+   t.lane === i && Math.abs(t.z - (-row * 7 - 2)) < 0.2
+ );
+
+ if(!target){
+   locked = false;
+   return;
  }
+
+ jumpStart = mother.position.clone();
+ jumpEnd = new THREE.Vector3(target.x, 0, target.z);
+ jumpT = 0;
+ jumping = true;
+ moving = true;
+
+ const wall = walls.find(w => w.index === row);
+ if(wall) wall.down = true;
+}
+
  const target=tiles.filter(t=>t.lane===i&&Math.abs(t.z-(-row*7-2))<.2)[0];
  if(target){
   jumpStart=mother.position.clone();
@@ -282,8 +310,23 @@ function chooseAnswer(i){
    returnRow=0;returnLane=1;locked=false;updateHud();
   }else{
    mother.position.set(0,0,-row*7+4);
-   locked=false;setAnswers();
-  }
+   locked=false;
+function setAnswers(){
+ const q = questions[row];
+ document.getElementById('question').textContent = q.q;
+ const ans = document.getElementById('answers');
+ ans.innerHTML = '';
+
+ q.a.forEach((txt, i) => {
+   const b = document.createElement('div');
+   b.className = 'answer';
+   b.textContent = txt;
+   ans.appendChild(b);
+ });
+
+ updateHud();
+}
+ }
  },1000);
 }
 function move(dx,dz){
