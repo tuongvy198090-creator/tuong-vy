@@ -451,12 +451,28 @@ $("answers").innerHTML=q.a.map((a,i)=>'<div class="ans">'+String.fromCharCode(65
 $("progress").textContent="Câu "+(row+1)+"/"+questions.length;
 $("stage").textContent="🐧 MÀN 1: ĐI LẤY CÁ";$("quiz").style.display="block";startTimer();
 }
+function moveHorizontal(d){
+    if(!started || busy || falling || jumping) return;
+
+    // Màn 2: đảo chiều điều khiển
+    const direction = phase === "return" ? -d : d;
+
+    lane = Math.max(0, Math.min(3, lane + direction));
+    penguin.position.x = laneX[lane];
+}
 function move(d){
-if(!started||busy||falling||jumping)return;
-if(d===0)return;
-lane=Math.max(0,Math.min(3,lane+d));
-penguin.position.x=laneX[lane];
-if(phase==="return"&&fishBucket.visible)fishBucket.position.x=penguin.position.x+1.05;
+    if(!started || busy || falling || jumping) return;
+    if(d === 0) return;
+
+    // Màn 2 đảo hướng vì chim quay mặt về hướng ngược lại
+    const direction = phase === "return" ? -d : d;
+
+    lane = Math.max(0, Math.min(3, lane + direction));
+    penguin.position.x = laneX[lane];
+
+    if(phase === "return" && fishBucket.visible){
+        fishBucket.position.x = penguin.position.x + 1.05;
+    }
 }
 function breakTile(tile){
 if(!tile)return;
