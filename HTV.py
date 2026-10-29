@@ -31,7 +31,40 @@ canvas{width:100%;height:100%;display:block}
 .panel{position:relative;overflow:hidden;width:min(95%,590px);background:linear-gradient(155deg,#fffef2f5 0%,#d9f5fff5 55%,#a8e4fff5 100%);color:#12324a;border:3px solid #ffffff;border-radius:30px;padding:30px;text-align:center;box-shadow:0 20px 65px #002b4c88,inset 0 0 0 2px #8bd8f477}
 .panel:before{content:"❄  ✦  ❄  ✦  ❄";display:block;color:#4badd7;font-size:19px;letter-spacing:12px;margin-bottom:10px}
 .panel:after{content:"🐟  ❄  🐟";display:block;font-size:23px;letter-spacing:12px;margin-top:16px;opacity:.85}
-.panel h1{margin:0 0 12px;font-size:clamp(29px,5vw,46px);color:#07527b;text-shadow:0 3px 0 #fff,0 5px 14px #69bfe566;letter-spacing:1px}
+.panel h1 {
+    position: relative;
+    display: inline-block;
+    margin: 8px 0 16px;
+    padding: 10px 14px 14px;
+    font-family: "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+    font-size: clamp(29px, 5vw, 46px);
+    font-weight: 1000;
+    line-height: 1.2;
+    letter-spacing: 1px;
+    color: #0877a9;
+    -webkit-text-stroke: 1px #ffffff;
+    text-shadow:
+        0 3px 0 #d8f5ff,
+        0 5px 0 #69b9df,
+        0 8px 12px #226b9166;
+}
+
+/* Tuyết phủ trên đầu chữ */
+.panel h1::before {
+    content: "❄ ❄ ❄ ❄ ❄";
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    color: #ffffff;
+    font-size: clamp(10px, 1.8vw, 16px);
+    letter-spacing: 5px;
+    -webkit-text-stroke: 0;
+    text-shadow: 0 1px 3px #75c9ed;
+    white-space: nowrap;
+    pointer-events: none;
+}
 .panel p{line-height:1.6}
 .welcome-icon{font-size:76px;line-height:1.2;margin:7px;filter:drop-shadow(0 8px 5px #357ca544);animation:penguinWelcome 1.6s ease-in-out infinite}
 @keyframes penguinWelcome{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
