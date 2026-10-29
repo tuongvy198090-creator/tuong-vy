@@ -639,8 +639,24 @@ $("homeBtn").addEventListener("click", function(){
     location.reload();
 });
 $("start").addEventListener("click",startGame);
-$("left").addEventListener("click",()=>move(-1));
-$("right").addEventListener("click",()=>move(1));
+$("left").addEventListener("click",()=>{
+    if(phase==="return"){
+        if(!started||busy||jumping||falling)return;
+        lane=Math.max(0,lane-1);
+        penguin.position.x=laneX[lane];
+    }else{
+        move(-1);
+    }
+});
+$("right").addEventListener("click",()=>{
+    if(phase==="return"){
+        if(!started||busy||jumping||falling)return;
+        lane=Math.min(3,lane+1);
+        penguin.position.x=laneX[lane];
+    }else{
+        move(1);
+    }
+});
 $("up").addEventListener("click",()=>{
 if(phase==="return"){if(!busy&&!jumping){penguin.position.z-=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}}
 else jump();
