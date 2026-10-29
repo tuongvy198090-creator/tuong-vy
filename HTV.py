@@ -642,8 +642,8 @@ $("start").addEventListener("click",startGame);
 $("left").addEventListener("click",()=>{
     if(phase==="return"){
         if(!started||busy||jumping||falling)return;
-        lane=Math.max(0,lane-1);
-        penguin.position.x=laneX[lane];
+       lane=Math.max(0,lane-1);
+penguin.position.x=laneX[lane];
     }else{
         move(-1);
     }
