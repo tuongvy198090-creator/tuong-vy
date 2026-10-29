@@ -27,121 +27,49 @@ canvas{width:100%;height:100%;display:block}
 .ans{padding:8px 4px;border-radius:12px;background:#ffffffed;color:#12334b;border:2px solid #a7d9ef;font-size:clamp(10px,1.7vw,15px);font-weight:bold;overflow-wrap:anywhere}
 #timer{display:inline-block;margin-top:7px;padding:7px 13px;border-radius:12px;background:#082b49ed;color:#fff1a6;font-weight:bold}
 #message{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);background:#062d48ef;color:white;border:2px solid #ffffffaa;border-radius:17px;padding:13px 19px;font-weight:bold;font-size:20px;text-align:center;max-width:90%;display:none;z-index:5}
-
-/* NÚT CÀI ĐẶT */
-#settingsBtn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 8;
-    padding: 10px 14px;
-    border: 2px solid #ffffff;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #d9f5ff, #83d7f5);
-    color: #164768;
-    font-size: 14px;
-    box-shadow: 0 4px 0 #4b9fc5;
-}
-
-/* BẢNG CÀI ĐẶT */
-#settingsPanel {
-    position: absolute;
-    inset: 0;
-    z-index: 20;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    background: #041c35bb;
-    backdrop-filter: blur(5px);
-}
-
-.settings-card {
-    width: min(92%, 420px);
-    padding: 25px;
-    border: 3px solid white;
-    border-radius: 25px;
-    background: linear-gradient(145deg, #f8fdff, #c8efff);
-    color: #16415e;
-    text-align: center;
-    box-shadow: 0 15px 45px #001d3c88;
-}
-
-.settings-card h2 {
-    margin-top: 0;
-    color: #299acb;
-    font-size: 28px;
-}
-
-.settings-option {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin: 12px 0;
-    padding: 12px;
-    border-radius: 13px;
-    background: #ffffffc9;
-    font-weight: bold;
-}
-
-.settings-option button {
-    padding: 9px 12px;
-    font-size: 13px;
-}
-
-#resumeBtn {
-    width: 100%;
-    margin-top: 12px;
-    background: linear-gradient(135deg, #36c7a0, #139d82);
-}
-
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#061b36a8 0%,#0b4779aa 48%,#b9eaffcc 100%);z-index:10;padding:16px;backdrop-filter:blur(2px)}
+.panel{position:relative;overflow:hidden;width:min(95%,590px);background:linear-gradient(155deg,#fffef2f5 0%,#d9f5fff5 55%,#a8e4fff5 100%);color:#12324a;border:3px solid #ffffff;border-radius:30px;padding:30px;text-align:center;box-shadow:0 20px 65px #002b4c88,inset 0 0 0 2px #8bd8f477}
+.panel:before{content:"❄  ✦  ❄  ✦  ❄";display:block;color:#4badd7;font-size:19px;letter-spacing:12px;margin-bottom:10px}
 .panel:after{content:"🐟  ❄  🐟";display:block;font-size:23px;letter-spacing:12px;margin-top:16px;opacity:.85}
 /* Tiêu đề tròn trịa, dễ thương như sticker */
-
-/* TIÊU ĐỀ XANH PASTEL TRÒN TRĨNH */
 .panel h1 {
     position: relative;
     display: inline-block;
-    margin: 18px 0 20px;
-    padding: 10px 12px 12px;
+    margin: 12px 0 18px;
+    padding: 8px 10px 12px;
     font-family: "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
     font-size: clamp(28px, 5vw, 45px);
     font-weight: 1000;
     line-height: 1.2;
     letter-spacing: 1px;
-    color: #A8E6FF;
-    -webkit-text-stroke: 2px #FFFFFF;
-    paint-order: stroke fill;
+    color: #39a9dc;
+    -webkit-text-stroke: 2px #ffffff;
     text-shadow:
-        2px 2px 0 #FFFFFF,
-        -2px 2px 0 #FFFFFF,
-        2px -2px 0 #FFFFFF,
-        -2px -2px 0 #FFFFFF,
-        0 4px 0 #D5F4FF,
-        0 7px 0 #78CDED,
-        0 10px 14px #397CA655;
+        2px 2px 0 #ffffff,
+        -2px 2px 0 #ffffff,
+        2px -2px 0 #ffffff,
+        -2px -2px 0 #ffffff,
+        0 4px 0 #b7eaff,
+        0 7px 0 #65b9e2,
+        0 10px 14px #397ca655;
 }
 
-/* TUYẾT TRẮNG PHỦ PHÍA TRÊN CHỮ */
+/* Tuyết phủ trên tiêu đề */
 .panel h1::before {
-    content: "❄  ❅  ❄  ❅  ❄";
+    content: "❄ ❄ ❄ ❄";
     position: absolute;
-    top: -17px;
+    top: -16px;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    color: #FFFFFF;
-    font-size: clamp(12px, 2vw, 19px);
-    letter-spacing: 4px;
+    color: #ffffff;
+    font-size: clamp(12px, 2vw, 18px);
+    letter-spacing: 5px;
     -webkit-text-stroke: 0;
-    text-shadow:
-        0 0 4px #FFFFFF,
-        0 2px 7px #8BDcff;
+    text-shadow: 0 2px 4px #8bdcff;
     white-space: nowrap;
     pointer-events: none;
 }
-
 .panel p{line-height:1.6}
 .welcome-icon{font-size:76px;line-height:1.2;margin:7px;filter:drop-shadow(0 8px 5px #357ca544);animation:penguinWelcome 1.6s ease-in-out infinite}
 @keyframes penguinWelcome{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
