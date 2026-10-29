@@ -32,44 +32,50 @@ canvas{width:100%;height:100%;display:block}
 .panel:before{content:"❄  ✦  ❄  ✦  ❄";display:block;color:#4badd7;font-size:19px;letter-spacing:12px;margin-bottom:10px}
 .panel:after{content:"🐟  ❄  🐟";display:block;font-size:23px;letter-spacing:12px;margin-top:16px;opacity:.85}
 /* Tiêu đề tròn trịa, dễ thương như sticker */
+
+/* TIÊU ĐỀ XANH PASTEL TRÒN TRĨNH */
 .panel h1 {
     position: relative;
     display: inline-block;
-    margin: 12px 0 18px;
-    padding: 8px 10px 12px;
+    margin: 18px 0 20px;
+    padding: 10px 12px 12px;
     font-family: "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
     font-size: clamp(28px, 5vw, 45px);
     font-weight: 1000;
     line-height: 1.2;
     letter-spacing: 1px;
-    color: #39a9dc;
-    -webkit-text-stroke: 2px #ffffff;
+    color: #A8E6FF;
+    -webkit-text-stroke: 2px #FFFFFF;
+    paint-order: stroke fill;
     text-shadow:
-        2px 2px 0 #ffffff,
-        -2px 2px 0 #ffffff,
-        2px -2px 0 #ffffff,
-        -2px -2px 0 #ffffff,
-        0 4px 0 #b7eaff,
-        0 7px 0 #65b9e2,
-        0 10px 14px #397ca655;
+        2px 2px 0 #FFFFFF,
+        -2px 2px 0 #FFFFFF,
+        2px -2px 0 #FFFFFF,
+        -2px -2px 0 #FFFFFF,
+        0 4px 0 #D5F4FF,
+        0 7px 0 #78CDED,
+        0 10px 14px #397CA655;
 }
 
-/* Tuyết phủ trên tiêu đề */
+/* TUYẾT TRẮNG PHỦ PHÍA TRÊN CHỮ */
 .panel h1::before {
-    content: "❄ ❄ ❄ ❄";
+    content: "❄  ❅  ❄  ❅  ❄";
     position: absolute;
-    top: -16px;
+    top: -17px;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    color: #ffffff;
-    font-size: clamp(12px, 2vw, 18px);
-    letter-spacing: 5px;
+    color: #FFFFFF;
+    font-size: clamp(12px, 2vw, 19px);
+    letter-spacing: 4px;
     -webkit-text-stroke: 0;
-    text-shadow: 0 2px 4px #8bdcff;
+    text-shadow:
+        0 0 4px #FFFFFF,
+        0 2px 7px #8BDcff;
     white-space: nowrap;
     pointer-events: none;
 }
+
 .panel p{line-height:1.6}
 .welcome-icon{font-size:76px;line-height:1.2;margin:7px;filter:drop-shadow(0 8px 5px #357ca544);animation:penguinWelcome 1.6s ease-in-out infinite}
 @keyframes penguinWelcome{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
