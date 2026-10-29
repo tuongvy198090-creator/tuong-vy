@@ -100,7 +100,13 @@ button:active{transform:translateY(2px);box-shadow:0 2px 0 #07577e}
 <div id="hud">
 <div class="pill" id="stage">🐧 MÀN 1: ĐI LẤY CÁ</div>
 <div style="display:flex;align-items:center;gap:8px;pointer-events:auto">
-    <div class="pill" id="progress">Câu 1/7</div>
+   <div style="display:flex;gap:8px;align-items:center;pointer-events:auto">
+  <div class="pill" id="progress">Câu 1/7</div>
+  <button id="settingsBtn" aria-label="Cài đặt"
+    style="padding:8px 12px;border-radius:14px;background:#092c49;color:white;font-size:20px">
+    ⚙️
+  </button>
+</div>
     <button id="settingsBtn" title="Cài đặt"
         style="padding:8px 11px;border-radius:14px;background:#092c49dd;
         color:white;font-size:20px;box-shadow:none">⚙️</button>
@@ -114,6 +120,47 @@ button:active{transform:translateY(2px);box-shadow:0 2px 0 #07577e}
 </div>
 
 <div id="message"></div>
+<div id="settingsPanel" style="
+display:none;position:absolute;inset:0;z-index:20;
+align-items:center;justify-content:center;padding:16px;
+background:#041a30aa;backdrop-filter:blur(5px)">
+
+  <div style="
+  width:min(92%,380px);padding:24px;border-radius:25px;
+  background:linear-gradient(145deg,#f5fdff,#bceaff);
+  border:3px solid white;text-align:center;
+  color:#12324a;box-shadow:0 15px 40px #002b4c88">
+
+    <button id="closeSettings" style="
+    float:right;padding:5px 11px;background:#d5efff;
+    color:#12324a;font-size:18px">✕</button>
+
+    <h2 style="margin-top:20px">⚙️ CÀI ĐẶT</h2>
+
+    <div style="margin:20px 0;padding:13px;background:#ffffffbb;border-radius:15px">
+      <label style="font-weight:bold;font-size:16px">
+        <input type="checkbox" id="soundToggle" checked
+        style="width:18px;height:18px;vertical-align:middle">
+        🔊 Bật âm thanh
+      </label>
+    </div>
+
+    <button id="resumeBtn" style="width:100%;margin:6px 0">
+      ▶️ TIẾP TỤC CHƠI
+    </button>
+
+    <button id="restartBtn" style="
+    width:100%;margin:6px 0;background:#f4a735;color:#173954">
+      🔄 CHƠI LẠI TỪ ĐẦU
+    </button>
+
+    <button id="homeBtn" style="
+    width:100%;margin:6px 0;background:#477b9c">
+      🏠 VỀ MÀN HÌNH CHÀO MỪNG
+    </button>
+
+  </div>
+</div>
 
 <div id="hint">← → chọn hướng · ↑ tiến · ↓ lùi · SPACE nhảy</div>
 
@@ -556,6 +603,41 @@ fishBucket.rotation.y+=dt*.7;
 renderer.render(scene,camera);
 }
 
+let gamePaused = false;
+let soundEnabled = true;
+
+function openSettings(){
+    if(!started || gamePaused) return;
+
+    gamePaused = true;
+    stopTimer();
+    $("settingsPanel").style.display = "flex";
+}
+
+function closeSettings(){
+    $("settingsPanel").style.display = "none";
+    gamePaused = false;
+
+    if(started && phase === "outbound" && !busy){
+        startTimer();
+    }
+}
+
+$("settingsBtn").addEventListener("click", openSettings);
+$("closeSettings").addEventListener("click", closeSettings);
+$("resumeBtn").addEventListener("click", closeSettings);
+
+$("soundToggle").addEventListener("change", function(){
+    soundEnabled = this.checked;
+});
+
+$("restartBtn").addEventListener("click", function(){
+    location.reload();
+});
+
+$("homeBtn").addEventListener("click", function(){
+    location.reload();
+});
 $("start").addEventListener("click",startGame);
 $("left").addEventListener("click",()=>move(-1));
 $("right").addEventListener("click",()=>move(1));
