@@ -1,4 +1,3 @@
-
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -28,15 +27,19 @@ canvas{width:100%;height:100%;display:block}
 .ans{padding:8px 4px;border-radius:12px;background:#ffffffed;color:#12334b;border:2px solid #a7d9ef;font-size:clamp(10px,1.7vw,15px);font-weight:bold;overflow-wrap:anywhere}
 #timer{display:inline-block;margin-top:7px;padding:7px 13px;border-radius:12px;background:#082b49ed;color:#fff1a6;font-weight:bold}
 #message{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);background:#062d48ef;color:white;border:2px solid #ffffffaa;border-radius:17px;padding:13px 19px;font-weight:bold;font-size:20px;text-align:center;max-width:90%;display:none;z-index:5}
-#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#062746dd,#168bbdcc,#b6efffbb);z-index:10;padding:16px}
-.panel{width:min(95%,550px);background:linear-gradient(145deg,#fffffffa,#dff7fffa);color:#12324a;border:2px solid #ffffff;border-radius:28px;padding:28px;text-align:center;box-shadow:0 18px 50px #002b4c66}
-.panel h1{margin:0 0 12px;font-size:clamp(27px,5vw,43px);color:#07527b;text-shadow:0 2px 0 white}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#061b36a8 0%,#0b4779aa 48%,#b9eaffcc 100%);z-index:10;padding:16px;backdrop-filter:blur(2px)}
+.panel{position:relative;overflow:hidden;width:min(95%,590px);background:linear-gradient(155deg,#fffef2f5 0%,#d9f5fff5 55%,#a8e4fff5 100%);color:#12324a;border:3px solid #ffffff;border-radius:30px;padding:30px;text-align:center;box-shadow:0 20px 65px #002b4c88,inset 0 0 0 2px #8bd8f477}
+.panel:before{content:"❄  ✦  ❄  ✦  ❄";display:block;color:#4badd7;font-size:19px;letter-spacing:12px;margin-bottom:10px}
+.panel:after{content:"🐟  ❄  🐟";display:block;font-size:23px;letter-spacing:12px;margin-top:16px;opacity:.85}
+.panel h1{margin:0 0 12px;font-size:clamp(29px,5vw,46px);color:#07527b;text-shadow:0 3px 0 #fff,0 5px 14px #69bfe566;letter-spacing:1px}
 .panel p{line-height:1.6}
-.welcome-icon{font-size:66px;line-height:1.2;margin:5px}
+.welcome-icon{font-size:76px;line-height:1.2;margin:7px;filter:drop-shadow(0 8px 5px #357ca544);animation:penguinWelcome 1.6s ease-in-out infinite}
+@keyframes penguinWelcome{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
 .welcome-tag{display:inline-block;border-radius:30px;padding:7px 13px;background:#c7efff;color:#07527b;font-weight:bold;font-size:13px;margin-bottom:12px}
 button{border:0;border-radius:14px;padding:12px 18px;background:#087fba;color:white;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 #07577e}
 button:active{transform:translateY(2px);box-shadow:0 2px 0 #07577e}
-#start{margin-top:8px;padding:15px 28px;border-radius:18px;background:linear-gradient(135deg,#0b9bd0,#0874b8);font-size:18px}
+#start{margin-top:8px;padding:16px 30px;border:2px solid #fff8a6;border-radius:18px;background:linear-gradient(135deg,#ffdc55,#ff9f22);color:#173954;font-size:19px;box-shadow:0 6px 0 #bd6d16,0 10px 22px #07577e44;animation:startPulse 1.8s ease-in-out infinite}
+@keyframes startPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
 #controls{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
 .pad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,42px);gap:5px;pointer-events:auto}
 .ctrl{border:2px solid #ffffffb8;border-radius:14px;background:#073451d9;color:white;font-size:21px;font-weight:bold;padding:5px;box-shadow:0 3px 0 #03233b}
@@ -145,6 +148,7 @@ let busy=false,jumping=false,falling=false;
 let jumpStart=0,jumpFrom=new THREE.Vector3(),jumpTo=new THREE.Vector3();
 let fallStart=0,fallCallback=null,timerInterval=null,timeLeft=15;
 let messageTimeout=null;
+let penguinEyes=[],penguinWings=[],blinkAt=0,blinkUntil=0;
 const laneX=[-4.2,-1.4,1.4,4.2];
 const RETURN_ROW_COUNT=9,RETURN_SPACING=4.1;
 
@@ -253,11 +257,15 @@ o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;penguin.add(o);ret
 sphere(.58,black,0,.9,0,.85,1.1,.72);
 sphere(.43,white,0,.9,-.39,.8,1,.25);
 sphere(.36,black,0,1.72,-.02,.9,1,.8);
-sphere(.07,eye,-.13,1.79,-.34);sphere(.07,eye,.13,1.79,-.34);
+const eyeLeft=sphere(.07,eye,-.13,1.79,-.34);
+const eyeRight=sphere(.07,eye,.13,1.79,-.34);
+penguinEyes=[eyeLeft,eyeRight];
 sphere(.12,orange,0,1.62,-.4,1,.5,1);
 for(const s of [-1,1]){
 const wing=sphere(.18,black,s*.52,1.02,-.02,1.2,.48,.65);
-wing.rotation.z=s*.25;sphere(.2,orange,s*.23,.27,-.02,1,.4,1.4);
+wing.rotation.z=s*.25;
+penguinWings.push({mesh:wing,base:wing.rotation.z,side:s});
+sphere(.2,orange,s*.23,.27,-.02,1,.4,1.4);
 }
 penguin.position.set(laneX[lane],.15,4.3);scene.add(penguin);
 }
@@ -334,7 +342,7 @@ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.se
 }
 function msg(text,ms=1100){
 $("message").textContent=text;$("message").style.display="block";clearTimeout(messageTimeout);
-if(ms>0)messageTimeout=setTimeout(()=>{$("message").style.display="none"},ms);
+if(ms>0)messageTimeout=setTimeout(()=>$("message").style.display="none",ms);
 }
 function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null}}
 function startTimer(){
@@ -390,7 +398,7 @@ penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
 fishBucket.visible=false;
 iceRows.forEach(r=>r.forEach(t=>{t.position.y=0;t.rotation.z=0;t.userData.cracked=false;t.userData.cracks.forEach(c=>c.visible=false)}));
 returnRows.forEach(r=>r.forEach(t=>scene.remove(t)));returnRows=[];
-setNight(false);$("quiz").style.display="block";showQuestion();msg("Thử lại nhé! Bộ câu hỏi đã được đổi.",1500);
+setNight(false);$("quiz").style.display="block";showQuestion();msg("Chơi lại nhé!",1200);
 }
 function reachShore(){
 stopTimer();phase="shore";busy=true;$("quiz").style.display="none";
@@ -442,6 +450,14 @@ showQuestion();
 function animate(){
 requestAnimationFrame(animate);
 const dt=Math.min(clock.getDelta(),.05);
+if(penguinEyes.length){
+const now=performance.now();
+if(now>blinkAt){blinkUntil=now+140;blinkAt=now+2200+Math.random()*2200;}
+const closed=now<blinkUntil;
+penguinEyes.forEach(e=>{e.scale.y=closed ? 0.12 : 1;});
+const flap=Math.sin(now*.009)*.22;
+penguinWings.forEach(w=>{w.mesh.rotation.z=w.base+w.side*flap;});
+}
 if(snow){
 const p=snow.geometry.attributes.position.array,v=snow.userData.velocities;
 for(let i=0;i<v.length;i++){
