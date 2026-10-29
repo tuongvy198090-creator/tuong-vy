@@ -28,15 +28,19 @@ canvas{width:100%;height:100%;display:block}
 .ans{padding:8px 4px;border-radius:12px;background:#ffffffed;color:#12334b;border:2px solid #a7d9ef;font-size:clamp(10px,1.7vw,15px);font-weight:bold;overflow-wrap:anywhere}
 #timer{display:inline-block;margin-top:7px;padding:7px 13px;border-radius:12px;background:#082b49ed;color:#fff1a6;font-weight:bold}
 #message{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);background:#062d48ef;color:white;border:2px solid #ffffffaa;border-radius:17px;padding:13px 19px;font-weight:bold;font-size:20px;text-align:center;max-width:90%;display:none;z-index:5}
-#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#06375b88,#041c36bb);z-index:10;padding:16px}
-.panel{width:min(95%,510px);background:#ffffffef;color:#12324a;border-radius:24px;padding:24px;text-align:center}
-.panel h1{margin:0 0 10px;font-size:clamp(25px,5vw,38px)}
-.panel p{line-height:1.5}
-button{border:0;border-radius:14px;padding:12px 18px;background:#087fba;color:white;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#062746dd,#168bbdcc,#b6efffbb);z-index:10;padding:16px}
+.panel{width:min(95%,550px);background:linear-gradient(145deg,#fffffffa,#dff7fffa);color:#12324a;border:2px solid #ffffff;border-radius:28px;padding:28px;text-align:center;box-shadow:0 18px 50px #002b4c66}
+.panel h1{margin:0 0 12px;font-size:clamp(27px,5vw,43px);color:#07527b;text-shadow:0 2px 0 white}
+.panel p{line-height:1.6}
+.welcome-icon{font-size:66px;line-height:1.2;margin:5px}
+.welcome-tag{display:inline-block;border-radius:30px;padding:7px 13px;background:#c7efff;color:#07527b;font-weight:bold;font-size:13px;margin-bottom:12px}
+button{border:0;border-radius:14px;padding:12px 18px;background:#087fba;color:white;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 #07577e}
+button:active{transform:translateY(2px);box-shadow:0 2px 0 #07577e}
+#start{margin-top:8px;padding:15px 28px;border-radius:18px;background:linear-gradient(135deg,#0b9bd0,#0874b8);font-size:18px}
 #controls{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
 .pad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,42px);gap:5px;pointer-events:auto}
-.ctrl{border:2px solid #ffffffb8;border-radius:14px;background:#073451c9;color:white;font-size:21px;font-weight:bold;padding:5px}
-#jump{width:88px;height:88px;border-radius:50%;font-size:15px;pointer-events:auto}
+.ctrl{border:2px solid #ffffffb8;border-radius:14px;background:#073451d9;color:white;font-size:21px;font-weight:bold;padding:5px;box-shadow:0 3px 0 #03233b}
+#jump{width:88px;height:88px;border-radius:50%;font-size:15px;pointer-events:auto;background:linear-gradient(135deg,#12a9dc,#07669e)}
 #hint{position:absolute;bottom:110px;left:50%;transform:translateX(-50%);padding:6px 10px;border-radius:10px;background:#092c49b9;color:white;font-size:12px;white-space:nowrap;pointer-events:none}
 @media(max-width:520px){
 .pill{font-size:11px;padding:7px 9px}
@@ -44,23 +48,29 @@ button{border:0;border-radius:14px;padding:12px 18px;background:#087fba;color:wh
 .ans{padding:7px 2px;font-size:10px}
 .pad{grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,38px)}
 #jump{width:78px;height:78px}
+.panel{padding:20px}
 }
 </style>
 </head>
 <body>
 <div id="game">
 <div id="view"></div>
+
 <div id="hud">
 <div class="pill" id="stage">🐧 MÀN 1: ĐI LẤY CÁ</div>
 <div class="pill" id="progress">Câu 1/7</div>
 </div>
+
 <div id="quiz">
 <div id="qtext">Sẵn sàng chưa?</div>
 <div id="answers"></div>
 <div id="timer">⏱ 15 giây</div>
 </div>
+
 <div id="message"></div>
-<div id="hint">← → chọn đáp án · SPACE nhảy</div>
+
+<div id="hint">← → chọn hướng · ↑ tiến · ↓ lùi · SPACE nhảy</div>
+
 <div id="controls">
 <div class="pad">
 <div></div><button class="ctrl" id="up">↑</button><div></div>
@@ -70,12 +80,18 @@ button{border:0;border-radius:14px;padding:12px 18px;background:#087fba;color:wh
 </div>
 <button class="ctrl" id="jump">NHẢY<br>❄️</button>
 </div>
+
 <div id="overlay">
 <div class="panel" id="panel">
-<h1>🐧 VƯỢT BĂNG LẤY CÁ</h1>
-<p>Vượt qua 7 câu hỏi ngẫu nhiên để sang bờ bên kia lấy xô cá. Sau đó, hãy nhảy qua những tảng băng để trở về!</p>
-<p>❄️ Tuyết rơi · Rừng thông phủ tuyết<br>🌙 Chặng trở về có bầu trời đêm<br>⏱ Mỗi câu hỏi có 15 giây</p>
-<button id="start">BẮT ĐẦU CHƠI</button>
+<div class="welcome-tag">❄️ CUỘC PHIÊU LƯU MÙA ĐÔNG ❄️</div>
+<div class="welcome-icon">🐧 🐟</div>
+<h1>VƯỢT BĂNG LẤY CÁ</h1>
+<p><b>Chào mừng nhà thám hiểm nhỏ!</b></p>
+<p>Hãy đồng hành cùng chim cánh cụt mẹ vượt qua cây cầu băng, trả lời những câu hỏi thú vị và mang xô cá trở về an toàn.</p>
+<p>🧠 Vượt thử thách kiến thức<br>
+🧊 Cẩn thận với những tảng băng yếu<br>
+🎮 Dùng phím điều hướng để di chuyển</p>
+<button id="start">🐧 BẮT ĐẦU CHƠI</button>
 </div>
 </div>
 </div>
@@ -179,7 +195,6 @@ addEventListener("resize",resize);
 animate();
 }
 
-// Nước và bờ tuyết
 function buildWater(){
 const water=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat(0x55c8ed,.35));
 water.rotation.x=-Math.PI/2;
@@ -193,106 +208,62 @@ scene.add(line);
 }
 function buildShore(z){
 const land=new THREE.Mesh(new THREE.BoxGeometry(24,.8,12),mat(0xe8f5fa));
-land.position.set(0,-.15,z);
-land.receiveShadow=true;
-scene.add(land);
+land.position.set(0,-.15,z);land.receiveShadow=true;scene.add(land);
 for(let i=0;i<16;i++){
 const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.3+Math.random()*.4),mat(0xb7dce9));
 rock.position.set(-11+Math.random()*22,.28,z-5+Math.random()*10);
-rock.scale.y=.45;
-scene.add(rock);
+rock.scale.y=.45;scene.add(rock);
 }
 }
-
-// SỬA 1: Núi băng chỉ xuất hiện ở xa hai bên.
-// Không còn cục băng nhọn chắn giữa đường đi.
 function buildDistantIcebergs(){
 for(let i=0;i<18;i++){
-const h=5+Math.random()*9;
-const side=i%2===0?-1:1;
-const m=new THREE.Mesh(
-new THREE.ConeGeometry(2.5+Math.random()*3,h,5),
-mat(i%2?0xc8eefa:0xa8d9ee)
-);
+const h=5+Math.random()*9,side=i%2===0?-1:1;
+const m=new THREE.Mesh(new THREE.ConeGeometry(2.5+Math.random()*3,h,5),mat(i%2?0xc8eefa:0xa8d9ee));
 m.position.set(side*(15+Math.random()*22),h/2-.5,-35+Math.random()*60);
 scene.add(m);
 }
 }
-
-// SỬA 2: Thêm hàng cây thông phủ tuyết ở hai bên đường.
 function buildSnowyTrees(){
-const trunkMat=mat(0x76513a);
-const snowMat=mat(0xf5fcff);
+const trunkMat=mat(0x76513a),snowMat=mat(0xf5fcff);
 const green=[mat(0x17664f),mat(0x247a5b),mat(0x318669)];
-
 for(const side of [-1,1]){
 for(let i=0;i<18;i++){
-const z=10-i*3.5;
-const x=side*(8.5+(i%3)*1.25);
-const h=2.8+(i%4)*.45;
+const z=10-i*3.5,x=side*(8.5+(i%3)*1.25),h=2.8+(i%4)*.45;
 const tree=new THREE.Group();
-
-const trunk=new THREE.Mesh(
-new THREE.CylinderGeometry(.13,.2,h*.35,7),trunkMat
-);
-trunk.position.y=h*.175;
-tree.add(trunk);
-
+const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.13,.2,h*.35,7),trunkMat);
+trunk.position.y=h*.175;tree.add(trunk);
 for(let layer=0;layer<3;layer++){
-const radius=1.05-layer*.18;
-const layerHeight=h*.48;
-const y=h*.25+layer*h*.22;
-
-const leaves=new THREE.Mesh(
-new THREE.ConeGeometry(radius,layerHeight,8),
-green[(i+layer)%green.length]
-);
-leaves.position.y=y;
-tree.add(leaves);
-
-const snowCap=new THREE.Mesh(
-new THREE.ConeGeometry(radius*.86,layerHeight*.78,8),
-snowMat
-);
-snowCap.position.y=y+.12;
-tree.add(snowCap);
+const radius=1.05-layer*.18,layerHeight=h*.48,y=h*.25+layer*h*.22;
+const leaves=new THREE.Mesh(new THREE.ConeGeometry(radius,layerHeight,8),green[(i+layer)%green.length]);
+leaves.position.y=y;tree.add(leaves);
+const snowCap=new THREE.Mesh(new THREE.ConeGeometry(radius*.86,layerHeight*.78,8),snowMat);
+snowCap.position.y=y+.12;tree.add(snowCap);
 }
-tree.position.set(x,0,z);
-tree.rotation.y=(Math.random()-.5)*.2;
-scene.add(tree);
+tree.position.set(x,0,z);tree.rotation.y=(Math.random()-.5)*.2;scene.add(tree);
 }
 }
 }
-
 function buildPenguin(){
 penguin=new THREE.Group();
-const black=mat(0x202f43),white=mat(0xf5fbff);
-const orange=mat(0xffa52e),eye=mat(0x101820);
+const black=mat(0x202f43),white=mat(0xf5fbff),orange=mat(0xffa52e),eye=mat(0x101820);
 function sphere(r,m,x,y,z,sx=1,sy=1,sz=1){
 const o=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);
-o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;
-penguin.add(o);return o;
+o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;penguin.add(o);return o;
 }
 sphere(.58,black,0,.9,0,.85,1.1,.72);
 sphere(.43,white,0,.9,-.39,.8,1,.25);
 sphere(.36,black,0,1.72,-.02,.9,1,.8);
-sphere(.07,eye,-.13,1.79,-.34);
-sphere(.07,eye,.13,1.79,-.34);
+sphere(.07,eye,-.13,1.79,-.34);sphere(.07,eye,.13,1.79,-.34);
 sphere(.12,orange,0,1.62,-.4,1,.5,1);
 for(const s of [-1,1]){
 const wing=sphere(.18,black,s*.52,1.02,-.02,1.2,.48,.65);
-wing.rotation.z=s*.25;
-sphere(.2,orange,s*.23,.27,-.02,1,.4,1.4);
+wing.rotation.z=s*.25;sphere(.2,orange,s*.23,.27,-.02,1,.4,1.4);
 }
-penguin.position.set(laneX[lane],.15,4.3);
-scene.add(penguin);
+penguin.position.set(laneX[lane],.15,4.3);scene.add(penguin);
 }
-
 function buildBucket(){
 fishBucket=new THREE.Group();
-const body=new THREE.Mesh(
-new THREE.CylinderGeometry(.42,.3,.65,16,1,true),mat(0x8cbdcc)
-);
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.42,.3,.65,16,1,true),mat(0x8cbdcc));
 body.position.y=.35;fishBucket.add(body);
 const rim=new THREE.Mesh(new THREE.TorusGeometry(.4,.045,8,20),mat(0xe4f7ff));
 rim.rotation.x=Math.PI/2;rim.position.y=.67;fishBucket.add(rim);
@@ -302,11 +273,8 @@ for(let i=0;i<3;i++){
 const fish=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),mat(0xffb84d));
 fish.position.set((i-1)*.17,.58,.05);fish.scale.set(1,.5,.5);fishBucket.add(fish);
 }
-fishBucket.position.set(0,0,-32);
-fishBucket.visible=false;
-scene.add(fishBucket);
+fishBucket.position.set(1.05,.15,-32);fishBucket.visible=false;scene.add(fishBucket);
 }
-
 function makeTile(x,z,w=2.45,d=2.5){
 const group=new THREE.Group();
 group.add(new THREE.Mesh(new THREE.BoxGeometry(w,.32,d),mat(0x8fdcf4,.25,.1)));
@@ -314,15 +282,12 @@ const top=new THREE.Mesh(new THREE.BoxGeometry(w-.12,.09,d-.14),mat(0xe8fbff,.2)
 top.position.y=.2;group.add(top);
 for(let i=0;i<3;i++){
 const crack=new THREE.Mesh(new THREE.BoxGeometry(.04,.015,.7),mat(0x468ca9));
-crack.position.set((i-1)*.45,.252,(i%2)*.3-.1);
-crack.rotation.y=.4;crack.visible=false;group.add(crack);
+crack.position.set((i-1)*.45,.252,(i%2)*.3-.1);crack.rotation.y=.4;crack.visible=false;group.add(crack);
 }
 group.position.set(x,0,z);scene.add(group);
-group.userData.cracks=group.children.slice(2);
-group.userData.cracked=false;
+group.userData.cracks=group.children.slice(2);group.userData.cracked=false;
 return group;
 }
-
 function buildIceRows(){
 iceRows=[];
 for(let r=0;r<7;r++){
@@ -334,23 +299,18 @@ iceRows.push(tiles);
 function buildSnow(){
 const count=1300,positions=new Float32Array(count*3),velocities=new Float32Array(count);
 for(let i=0;i<count;i++){
-positions[i*3]=(Math.random()-.5)*65;
-positions[i*3+1]=Math.random()*28;
-positions[i*3+2]=-40+Math.random()*65;
-velocities[i]=1.3+Math.random()*3.4;
+positions[i*3]=(Math.random()-.5)*65;positions[i*3+1]=Math.random()*28;
+positions[i*3+2]=-40+Math.random()*65;velocities[i]=1.3+Math.random()*3.4;
 }
 const geo=new THREE.BufferGeometry();
 geo.setAttribute("position",new THREE.BufferAttribute(positions,3));
-snow=new THREE.Points(geo,new THREE.PointsMaterial({
-color:0xffffff,size:.12,transparent:true,opacity:.9
-}));
+snow=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.12,transparent:true,opacity:.9}));
 snow.userData.velocities=velocities;scene.add(snow);
 }
 function buildStars(){
 const positions=[];
 for(let i=0;i<450;i++)positions.push((Math.random()-.5)*120,8+Math.random()*45,-55+Math.random()*80);
-const geo=new THREE.BufferGeometry();
-geo.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
 const s=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.16}));
 s.visible=false;scene.add(s);stars.push(s);
 moon=new THREE.Mesh(new THREE.SphereGeometry(2,24,20),new THREE.MeshBasicMaterial({color:0xfff0bc}));
@@ -358,65 +318,51 @@ moon.position.set(13,17,-38);moon.visible=false;scene.add(moon);
 }
 function setNight(on){
 if(on){
-scene.background=new THREE.Color(0x06132f);
-scene.fog=new THREE.Fog(0x101d42,22,85);
-ambientLight.color.set(0x6078b8);ambientLight.groundColor.set(0x172342);
-ambientLight.intensity=.8;skyLight.color.set(0x9ebaff);skyLight.intensity=.65;
+scene.background=new THREE.Color(0x06132f);scene.fog=new THREE.Fog(0x101d42,22,85);
+ambientLight.color.set(0x6078b8);ambientLight.groundColor.set(0x172342);ambientLight.intensity=.8;
+skyLight.color.set(0x9ebaff);skyLight.intensity=.65;
 stars.forEach(s=>s.visible=true);moon.visible=true;
 }else{
-scene.background=new THREE.Color(0x9cddf7);
-scene.fog=new THREE.Fog(0xb8eaff,35,100);
-ambientLight.color.set(0xe4f8ff);ambientLight.groundColor.set(0x59879c);
-ambientLight.intensity=2;skyLight.color.set(0xffffff);skyLight.intensity=2.2;
+scene.background=new THREE.Color(0x9cddf7);scene.fog=new THREE.Fog(0xb8eaff,35,100);
+ambientLight.color.set(0xe4f8ff);ambientLight.groundColor.set(0x59879c);ambientLight.intensity=2;
+skyLight.color.set(0xffffff);skyLight.intensity=2.2;
 stars.forEach(s=>s.visible=false);moon.visible=false;
 }
 }
 function resize(){
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);
+camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);
 }
 function msg(text,ms=1100){
-$("message").textContent=text;$("message").style.display="block";
-clearTimeout(messageTimeout);
+$("message").textContent=text;$("message").style.display="block";clearTimeout(messageTimeout);
 if(ms>0)messageTimeout=setTimeout(()=>{$("message").style.display="none"},ms);
 }
-function stopTimer(){
-if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null}
-}
+function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null}}
 function startTimer(){
-stopTimer();timeLeft=15;
-$("timer").textContent="⏱ 15 giây";$("timer").style.color="#fff1a6";
+stopTimer();timeLeft=15;$("timer").textContent="⏱ 15 giây";$("timer").style.color="#fff1a6";
 timerInterval=setInterval(()=>{
 if(!started||phase!=="outbound"||busy){stopTimer();return}
 timeLeft--;$("timer").textContent="⏱ "+timeLeft+" giây";
 if(timeLeft<=5)$("timer").style.color="#ff7777";
-if(timeLeft<=0){
-stopTimer();busy=true;breakTile(iceRows[row][lane]);
-msg("Hết giờ! Tảng băng vỡ rồi!",1400);
-setTimeout(()=>fall(resetStart),300);
-}
+if(timeLeft<=0){stopTimer();breakTile(iceRows[row][lane]);msg("Hết giờ! Tảng băng vỡ rồi!",1400);busy=true;setTimeout(()=>fall(resetStart),300)}
 },1000);
 }
 function showQuestion(){
 if(row>=questions.length){reachShore();return}
-const q=questions[row];
-$("qtext").textContent=q.q;
-$("answers").innerHTML=q.a.map((a,i)=>
-'<div class="ans">'+String.fromCharCode(65+i)+". "+a+"</div>"
-).join("");
+const q=questions[row];$("qtext").textContent=q.q;
+$("answers").innerHTML=q.a.map((a,i)=>'<div class="ans">'+String.fromCharCode(65+i)+". "+a+"</div>").join("");
 $("progress").textContent="Câu "+(row+1)+"/"+questions.length;
-$("stage").textContent="🐧 MÀN 1: ĐI LẤY CÁ";
-$("quiz").style.display="block";startTimer();
+$("stage").textContent="🐧 MÀN 1: ĐI LẤY CÁ";$("quiz").style.display="block";startTimer();
 }
 function move(d){
 if(!started||busy||falling||jumping)return;
+if(d===0)return;
 lane=Math.max(0,Math.min(3,lane+d));
 penguin.position.x=laneX[lane];
+if(phase==="return"&&fishBucket.visible)fishBucket.position.x=penguin.position.x+1.05;
 }
 function breakTile(tile){
 if(!tile)return;
-tile.userData.cracked=true;
-tile.userData.cracks.forEach(c=>c.visible=true);
+tile.userData.cracked=true;tile.userData.cracks.forEach(c=>c.visible=true);
 tile.rotation.z=.08;tile.position.y=-.25;
 }
 function jump(){
@@ -424,18 +370,14 @@ if(!started||busy||falling||jumping)return;
 if(phase==="outbound"){
 if(!iceRows[row]||!iceRows[row][lane])return;
 stopTimer();busy=true;jumping=true;jumpStart=performance.now();
-jumpFrom.copy(penguin.position);
-jumpTo.set(laneX[lane],.15,iceRows[row][lane].position.z+.25);
+jumpFrom.copy(penguin.position);jumpTo.set(laneX[lane],.15,iceRows[row][lane].position.z+.25);
 penguin.userData.jumpCorrect=(lane===questions[row].c);
 msg("Đang nhảy lên tảng băng...",0);
 }else if(phase==="return"){
-const tile=returnRows[step]&&returnRows[step][lane];
-if(!tile)return;
+const tile=returnRows[step]&&returnRows[step][lane];if(!tile)return;
 busy=true;jumping=true;jumpStart=performance.now();
-jumpFrom.copy(penguin.position);
-jumpTo.set(tile.position.x,.15,tile.position.z);
-penguin.userData.returnTile=tile;
-msg("Đang nhảy về phía trước!",0);
+jumpFrom.copy(penguin.position);jumpTo.set(tile.position.x,.15,tile.position.z);
+penguin.userData.returnTile=tile;msg("Đang nhảy về phía trước!",0);
 }
 }
 function fall(callback){
@@ -443,21 +385,19 @@ if(falling)return;
 falling=true;jumping=false;busy=true;fallStart=performance.now();fallCallback=callback;
 }
 function resetStart(){
-falling=false;jumping=false;busy=false;row=0;lane=1;step=0;phase="outbound";
-chooseQuestions();penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
-iceRows.forEach(r=>r.forEach(t=>{
-t.position.y=0;t.rotation.z=0;t.userData.cracked=false;
-t.userData.cracks.forEach(c=>c.visible=false);
-}));
+falling=false;jumping=false;busy=false;row=0;lane=1;step=0;phase="outbound";chooseQuestions();
+penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
+fishBucket.visible=false;
+iceRows.forEach(r=>r.forEach(t=>{t.position.y=0;t.rotation.z=0;t.userData.cracked=false;t.userData.cracks.forEach(c=>c.visible=false)}));
 returnRows.forEach(r=>r.forEach(t=>scene.remove(t)));returnRows=[];
-setNight(false);$("quiz").style.display="block";showQuestion();
-msg("Thử lại nhé! Bộ câu hỏi đã được đổi.",1500);
+setNight(false);$("quiz").style.display="block";showQuestion();msg("Thử lại nhé! Bộ câu hỏi đã được đổi.",1500);
 }
 function reachShore(){
 stopTimer();phase="shore";busy=true;$("quiz").style.display="none";
 penguin.position.set(0,.15,-29);fishBucket.visible=true;
-msg("Đã sang bờ! Đến lấy xô cá nào!",1500);
-setTimeout(()=>{if(!started)return;fishBucket.visible=false;startReturn()},1500);
+fishBucket.position.set(1.05,.15,-29);
+msg("Đã sang bờ! Chim mẹ đã lấy được xô cá!",1500);
+setTimeout(()=>{if(!started)return;startReturn()},1500);
 }
 function createReturnRows(){
 returnRows.forEach(r=>r.forEach(t=>scene.remove(t)));returnRows=[];
@@ -471,43 +411,32 @@ returnRows.push(tiles);
 }
 }
 function startReturn(){
-phase="return";step=0;lane=1;busy=false;jumping=false;falling=false;
-setNight(true);createReturnRows();
+phase="return";step=0;lane=1;busy=false;jumping=false;falling=false;setNight(true);createReturnRows();
 penguin.position.set(laneX[lane],.15,-29);penguin.rotation.set(0,Math.PI,0);
-$("stage").textContent="🌙 MÀN 2: TRỞ VỀ";
-$("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
+fishBucket.visible=true;fishBucket.position.set(penguin.position.x+1.05,.15,penguin.position.z);
+$("stage").textContent="🌙 MÀN 2: TRỞ VỀ";$("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
 $("quiz").style.display="none";
-$("hint").textContent="← → chọn tảng băng · SPACE nhảy về phía trước";
-msg("Chọn một tảng băng ở hàng đầu rồi bấm NHẢY!",2200);
+$("hint").textContent="← → chọn tảng băng · ↑ tiến · ↓ lùi · SPACE nhảy";
+msg("Mang xô cá trở về! Cẩn thận với băng yếu!",2200);
 }
 function resetBucket(){
 falling=false;jumping=false;busy=false;phase="return";step=0;lane=1;
-returnRows.forEach(r=>r.forEach(t=>{
-t.position.y=0;t.rotation.z=0;t.userData.cracked=false;
-t.userData.cracks.forEach(c=>c.visible=false);
-}));
+returnRows.forEach(r=>r.forEach(t=>{t.position.y=0;t.rotation.z=0;t.userData.cracked=false;t.userData.cracks.forEach(c=>c.visible=false)}));
 penguin.position.set(laneX[lane],.15,-29);penguin.rotation.set(0,Math.PI,0);
-$("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
-msg("Thử lại đường về nhé!",1500);
+fishBucket.visible=true;fishBucket.position.set(penguin.position.x+1.05,.15,penguin.position.z);
+$("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;msg("Em đã quay lại bờ lấy cá. Thử đường băng lần nữa nhé!",1800);
 }
 function win(){
-busy=true;started=false;stopTimer();
-$("overlay").style.display="flex";
-$("panel").innerHTML='<h1>🎉 CHIẾN THẮNG!</h1>'+
-'<p>🐧 Chim cánh cụt đã mang xô cá về an toàn!</p>'+
-'<p>Em đã vượt qua tất cả các tảng băng và trở về bờ!</p>'+
-'<button id="restart">CHƠI LẠI</button>';
+busy=true;started=false;stopTimer();$("overlay").style.display="flex";
+$("panel").innerHTML='<div class="welcome-icon">🐧 🐟</div><h1>🎉 CHIẾN THẮNG!</h1><p>Chim cánh cụt mẹ đã mang xô cá về an toàn!</p><p>Em đã vượt qua tất cả các tảng băng!</p><button id="restart">CHƠI LẠI</button>';
 $("restart").onclick=()=>location.reload();$("quiz").style.display="none";
 }
 function startGame(){
-$("overlay").style.display="none";chooseQuestions();started=true;
-phase="outbound";row=0;lane=1;step=0;busy=false;jumping=false;falling=false;
-setNight(false);penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
-fishBucket.visible=false;$("hint").textContent="← → chọn đáp án · SPACE nhảy · WASD cũng dùng được";
-iceRows.forEach(r=>r.forEach(t=>{
-t.position.y=0;t.rotation.z=0;t.userData.cracked=false;
-t.userData.cracks.forEach(c=>c.visible=false);
-}));
+$("overlay").style.display="none";chooseQuestions();started=true;phase="outbound";
+row=0;lane=1;step=0;busy=false;jumping=false;falling=false;setNight(false);
+penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
+fishBucket.visible=false;$("hint").textContent="← → chọn đáp án · ↑ tiến · ↓ lùi · SPACE nhảy";
+iceRows.forEach(r=>r.forEach(t=>{t.position.y=0;t.rotation.z=0;t.userData.cracked=false;t.userData.cracks.forEach(c=>c.visible=false)}));
 showQuestion();
 }
 function animate(){
@@ -516,13 +445,8 @@ const dt=Math.min(clock.getDelta(),.05);
 if(snow){
 const p=snow.geometry.attributes.position.array,v=snow.userData.velocities;
 for(let i=0;i<v.length;i++){
-p[i*3+1]-=v[i]*dt;
-p[i*3]+=Math.sin(performance.now()*.0005+i)*dt*.18;
-if(p[i*3+1]<-.8){
-p[i*3+1]=20+Math.random()*10;
-p[i*3]=-32+Math.random()*64;
-p[i*3+2]=penguin.position.z-30+Math.random()*60;
-}
+p[i*3+1]-=v[i]*dt;p[i*3]+=Math.sin(performance.now()*.0005+i)*dt*.18;
+if(p[i*3+1]<-.8){p[i*3+1]=20+Math.random()*10;p[i*3]=-32+Math.random()*64;p[i*3+2]=penguin.position.z-30+Math.random()*60}
 }
 snow.geometry.attributes.position.needsUpdate=true;
 }
@@ -530,36 +454,23 @@ if(jumping){
 const t=Math.min(1,(performance.now()-jumpStart)/650);
 penguin.position.x=THREE.MathUtils.lerp(jumpFrom.x,jumpTo.x,t);
 penguin.position.z=THREE.MathUtils.lerp(jumpFrom.z,jumpTo.z,t);
-penguin.position.y=.15+Math.sin(t*Math.PI)*1.7;
-penguin.rotation.x=Math.sin(t*Math.PI)*.12;
+penguin.position.y=.15+Math.sin(t*Math.PI)*1.7;penguin.rotation.x=Math.sin(t*Math.PI)*.12;
+if(phase==="return"&&fishBucket.visible)fishBucket.position.set(penguin.position.x+1.05,penguin.position.y+.05,penguin.position.z);
 if(t>=1){
 jumping=false;penguin.position.copy(jumpTo);penguin.rotation.x=0;
 if(phase==="outbound"){
 if(penguin.userData.jumpCorrect){
 msg("Chính xác! Em đã đứng trên băng! ✔",850);row++;
-setTimeout(()=>{
-if(!started)return;busy=false;
-if(row>=questions.length)reachShore();
-else{penguin.position.z=iceRows[row][0].position.z+2.7;showQuestion()}
-},600);
-}else{
-breakTile(iceRows[row][lane]);msg("Sai đáp án! Băng vỡ!",1300);
-setTimeout(()=>fall(resetStart),300);
-}
+setTimeout(()=>{if(!started)return;busy=false;if(row>=questions.length)reachShore();else{penguin.position.z=iceRows[row][0].position.z+2.7;showQuestion()}},600);
+}else{breakTile(iceRows[row][lane]);msg("Sai đáp án! Băng vỡ!",1300);setTimeout(()=>fall(resetStart),300)}
 }else if(phase==="return"){
 const tile=penguin.userData.returnTile;
 if(tile&&tile.userData.weak){
-breakTile(tile);msg("Băng yếu vỡ rồi! Chim rơi xuống nước!",1300);
-setTimeout(()=>fall(resetBucket),300);
+breakTile(tile);msg("Băng yếu vỡ rồi! Chim rơi xuống nước!",1300);setTimeout(()=>fall(resetBucket),300);
 }else{
 step++;
-if(step>=RETURN_ROW_COUNT){
-msg("Về tới bờ an toàn!",1000);setTimeout(win,1000);
-}else{
-$("progress").textContent="Hàng băng "+(step+1)+"/"+RETURN_ROW_COUNT;
-msg("Đã đáp xuống! Nhảy tiếp về phía trước!",900);
-setTimeout(()=>{busy=false},500);
-}
+if(step>=RETURN_ROW_COUNT){msg("Về tới bờ an toàn!",1000);setTimeout(win,1000)}
+else{$("progress").textContent="Hàng băng "+(step+1)+"/"+RETURN_ROW_COUNT;msg("Đã đáp xuống! Nhảy tiếp về phía trước!",900);setTimeout(()=>{busy=false},500)}
 }
 }
 }
@@ -567,10 +478,7 @@ setTimeout(()=>{busy=false},500);
 if(falling){
 const t=Math.min(1,(performance.now()-fallStart)/650);
 penguin.position.y=.15-t*2.8;penguin.rotation.x=t*1.2;
-if(t>=1){
-falling=false;
-if(fallCallback){const cb=fallCallback;fallCallback=null;setTimeout(cb,450)}
-}
+if(t>=1){falling=false;if(fallCallback){const cb=fallCallback;fallCallback=null;setTimeout(cb,450)}}
 }
 let desiredCam,lookAt;
 if(phase==="return"){
@@ -581,21 +489,37 @@ desiredCam=new THREE.Vector3(penguin.position.x*.55,4.8,penguin.position.z+8.5);
 lookAt=new THREE.Vector3(penguin.position.x*.55,1.1,penguin.position.z-3.2);
 }
 camera.position.lerp(desiredCam,.09);camera.lookAt(lookAt);
-if(fishBucket.visible)fishBucket.rotation.y+=dt*.7;
+if(fishBucket.visible&&phase==="return"){
+fishBucket.position.x=THREE.MathUtils.lerp(fishBucket.position.x,penguin.position.x+1.05,.16);
+fishBucket.position.z=THREE.MathUtils.lerp(fishBucket.position.z,penguin.position.z,.16);
+fishBucket.rotation.y+=dt*.7;
+}
 renderer.render(scene,camera);
 }
 
 $("start").addEventListener("click",startGame);
 $("left").addEventListener("click",()=>move(-1));
 $("right").addEventListener("click",()=>move(1));
-$("up").addEventListener("click",jump);
-$("down").addEventListener("click",()=>move(0));
+$("up").addEventListener("click",()=>{
+if(phase==="return"){if(!busy&&!jumping){penguin.position.z-=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}}
+else jump();
+});
+$("down").addEventListener("click",()=>{
+if(phase==="return"&&!busy&&!jumping){penguin.position.z+=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}
+});
 $("jump").addEventListener("click",jump);
 addEventListener("keydown",e=>{
 if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," "].includes(e.key))e.preventDefault();
 if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A")move(-1);
 if(e.key==="ArrowRight"||e.key==="d"||e.key==="D")move(1);
-if(e.key===" "||e.key==="Enter"||e.key==="ArrowUp"||e.key==="w"||e.key==="W")jump();
+if(e.key==="ArrowUp"||e.key==="w"||e.key==="W"){
+if(phase==="return"&&!busy&&!jumping){penguin.position.z-=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}
+else jump();
+}
+if(e.key==="ArrowDown"||e.key==="s"||e.key==="S"){
+if(phase==="return"&&!busy&&!jumping){penguin.position.z+=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}
+}
+if(e.key===" "||e.key==="Enter")jump();
 });
 init();
 })();
