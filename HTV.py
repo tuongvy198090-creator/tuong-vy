@@ -557,6 +557,23 @@ renderer.render(scene,camera);
 }
 
 $("start").addEventListener("click",startGame);
+let gamePaused = false;
+
+$("settingsBtn").onclick = function () {
+    if (!started) return;
+    gamePaused = true;
+    stopTimer();
+    $("settingsPanel").style.display = "flex";
+};
+
+$("resumeBtn").onclick = function () {
+    $("settingsPanel").style.display = "none";
+    gamePaused = false;
+
+    if (started && phase === "outbound" && !busy) {
+        startTimer();
+    }
+};
 $("left").addEventListener("click",()=>move(-1));
 $("right").addEventListener("click",()=>move(1));
 $("up").addEventListener("click",()=>{
