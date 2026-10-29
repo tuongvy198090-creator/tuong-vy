@@ -540,11 +540,111 @@ penguin.position.set(laneX[lane],.15,-29);penguin.rotation.set(0,Math.PI,0);
 fishBucket.visible=true;fishBucket.position.set(penguin.position.x+1.05,.15,penguin.position.z);
 $("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;msg("Em đã quay lại bờ lấy cá. Thử đường băng lần nữa nhé!",1800);
 }
+
 function win(){
-busy=true;started=false;stopTimer();$("overlay").style.display="flex";
-$("panel").innerHTML='<div class="welcome-icon">🐧 🐟</div><h1>🎉 CHIẾN THẮNG!</h1><p>Chim cánh cụt mẹ đã mang xô cá về an toàn!</p><p>Em đã vượt qua tất cả các tảng băng!</p><button id="restart">CHƠI LẠI</button>';
-$("restart").onclick=()=>location.reload();$("quiz").style.display="none";
+    busy = true;
+    started = false;
+    stopTimer();
+
+    $("overlay").style.display = "flex";
+
+    $("panel").innerHTML = `
+      <style>
+        .win-title {
+          color: #287ba8;
+          font-family: "Trebuchet MS", Arial, sans-serif;
+          font-size: clamp(27px, 5vw, 42px);
+          font-weight: 1000;
+          line-height: 1.35;
+          -webkit-text-stroke: 1px white;
+          text-shadow:
+            2px 3px 0 #ffffff,
+            0 5px 0 #a9d9ee,
+            0 8px 12px #315d7860;
+          margin: 12px 0 20px;
+        }
+
+        .win-text {
+          color: #244d68;
+          font-size: 17px;
+          font-weight: bold;
+          line-height: 1.8;
+          text-shadow: 0 2px 0 white;
+        }
+
+        .confetti-piece {
+          position: fixed;
+          top: -20px;
+          width: 10px;
+          height: 16px;
+          z-index: 100;
+          pointer-events: none;
+          animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+          0% {
+            transform: translateY(-20px) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(105vh) rotate(900deg);
+            opacity: 0.85;
+          }
+        }
+
+        .win-penguin {
+          font-size: 70px;
+          filter: drop-shadow(0 7px 4px #5285a455);
+          animation: winBounce 1.2s ease-in-out infinite;
+        }
+
+        @keyframes winBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-9px); }
+        }
+      </style>
+
+      <div class="welcome-tag">❄️ CHUYẾN PHIÊU LƯU HOÀN THÀNH ❄️</div>
+      <div class="win-penguin">🐧 🐟</div>
+      <h1 class="win-title">🎉 CHIẾN THẮNG! 🎉</h1>
+      <p class="win-text">
+        Chim cánh cụt mẹ đã mang xô cá về an toàn!<br>
+        Em đã vượt qua tất cả các tảng băng!
+      </p>
+      <button id="restart">🔄 CHƠI LẠI</button>
+    `;
+
+    // Tạo pháo giấy nhiều màu
+    const colors = [
+      "#77c9f2", "#ffb8c9", "#ffe08a",
+      "#a8e6cf", "#c9b6ff", "#ffffff"
+    ];
+
+    const confetti = [];
+
+    for(let i = 0; i < 100; i++){
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.backgroundColor =
+        colors[Math.floor(Math.random() * colors.length)];
+      piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "3px";
+      piece.style.animationDuration = (2.5 + Math.random() * 3) + "s";
+      piece.style.animationDelay = (Math.random() * 1.8) + "s";
+
+      document.body.appendChild(piece);
+      confetti.push(piece);
+    }
+
+    setTimeout(() => {
+      confetti.forEach(piece => piece.remove());
+    }, 8000);
+
+    $("restart").onclick = () => location.reload();
+    $("quiz").style.display = "none";
 }
+
 function startGame(){
 $("overlay").style.display="none";chooseQuestions();started=true;phase="outbound";
 row=0;lane=1;step=0;busy=false;jumping=false;falling=false;setNight(false);
