@@ -62,7 +62,7 @@ canvas{display:block;width:100%;height:100%}
 <div id="timer">⏱ 15 giây</div>
 </div>
 <div id="message"></div>
-<div id="hint">← → chọn tảng băng · SPACE nhảy · WASD cũng dùng được</div>
+<div id="hint">← → chọn đáp án · SPACE nhảy · WASD cũng dùng được</div>
 <div id="controls">
 <div class="pad">
 <div></div><button class="ctrl" id="up">↑</button><div></div>
@@ -75,7 +75,7 @@ canvas{display:block;width:100%;height:100%}
 <div id="overlay">
 <div class="panel" id="panel">
 <h1>🐧 VƯỢT BĂNG LẤY CÁ</h1>
-<p>Vượt qua 7 câu hỏi để đến bờ bên kia lấy xô cá. Sau đó, hãy nhảy qua các tảng băng để trở về an toàn!</p>
+<p>Vượt qua 7 câu hỏi ngẫu nhiên để sang bờ bên kia lấy xô cá. Sau đó, hãy nhảy qua những tảng băng để trở về!</p>
 <p>❄️ Tuyết rơi trong khung cảnh 3D<br>🌙 Chặng trở về có bầu trời đêm<br>⏱ Mỗi câu hỏi có 15 giây</p>
 <button id="start">BẮT ĐẦU CHƠI</button>
 </div>
@@ -85,18 +85,45 @@ canvas{display:block;width:100%;height:100%}
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 (function(){
+"use strict";
 const $=id=>document.getElementById(id);
 
-const questions=[
-{q:"1. TOÁN: 3² + 4 bằng bao nhiêu?",a:["7","12","13","14"],c:2},
-{q:"2. TOÁN: Phân tích x² − 9 thành nhân tử.",a:["(x−9)(x+1)","(x−3)(x+3)","(x−3)²","x(x−9)"],c:1},
-{q:"3. KHTN: Đơn vị đo lực là gì?",a:["Mét","Niutơn","Jun","Oát"],c:1},
-{q:"4. KHTN: Nước tinh khiết sôi ở nhiệt độ nào trong điều kiện thường?",a:["0°C","50°C","100°C","150°C"],c:2},
-{q:"5. LỊCH SỬ: Ngô Quyền đánh quân Nam Hán trên sông nào năm 938?",a:["Sông Hồng","Sông Mã","Sông Bạch Đằng","Sông Cả"],c:2},
-{q:"6. ĐỊA LÍ: Đường xích đạo chia Trái Đất thành hai bán cầu nào?",a:["Đông và Tây","Bắc và Nam","Trên và dưới","Lục địa và đại dương"],c:1},
-{q:"7. TIẾNG ANH: Choose the correct past form of “go”.",a:["Goed","Gone","Went","Going"],c:2}
+const questionBank=[
+{q:"TOÁN: Rút gọn (x+3)² − (x−3)².",a:["6x","12x","2x²+18","12x+18"],c:1},
+{q:"TOÁN: Phân tích x² − 16 thành nhân tử.",a:["(x−4)²","(x+4)²","(x−4)(x+4)","x(x−16)"],c:2},
+{q:"TOÁN: Khai triển (2x−3)².",a:["4x²−9","4x²−12x+9","4x²+12x+9","2x²−12x+9"],c:1},
+{q:"TOÁN: Phân tích x²+6x+9 thành nhân tử.",a:["(x+3)²","(x−3)²","(x+9)(x−1)","x(x+6)+9x"],c:0},
+{q:"TOÁN: Với x=2, x³−2x²+3 bằng bao nhiêu?",a:["3","5","7","11"],c:1},
+{q:"HÌNH HỌC: Tứ giác có hai cặp cạnh đối song song là hình gì?",a:["Hình thang","Hình bình hành","Hình diều","Tam giác cân"],c:1},
+{q:"HÌNH HỌC: Hình bình hành có hai đường chéo vuông góc là hình gì?",a:["Hình chữ nhật","Hình thang cân","Hình thoi","Hình thang vuông"],c:2},
+{q:"HÌNH HỌC: Hình chữ nhật có hai cạnh kề bằng nhau là hình gì?",a:["Hình thoi","Hình vuông","Hình bình hành thường","Hình thang cân"],c:1},
+{q:"HÌNH HỌC: Tam giác vuông có hai cạnh góc vuông 5 cm và 12 cm. Cạnh huyền bằng bao nhiêu?",a:["13 cm","15 cm","17 cm","10 cm"],c:0},
+{q:"HÌNH HỌC: Tổng các góc trong một tứ giác bằng bao nhiêu?",a:["180°","270°","360°","540°"],c:2},
+{q:"VẬT LÍ: Công thức tính khối lượng riêng là gì?",a:["D=mV","D=m/V","D=V/m","D=m+V"],c:1},
+{q:"VẬT LÍ: Vật có khối lượng 600 g, thể tích 200 cm³. Khối lượng riêng là bao nhiêu?",a:["0,3 g/cm³","3 g/cm³","30 g/cm³","120 000 g/cm³"],c:1},
+{q:"VẬT LÍ: Đổi 2,7 g/cm³ sang kg/m³.",a:["27 kg/m³","270 kg/m³","2 700 kg/m³","27 000 kg/m³"],c:2},
+{q:"VẬT LÍ: Hai vật cùng thể tích, vật A có khối lượng lớn hơn vật B. Kết luận đúng là gì?",a:["A có khối lượng riêng lớn hơn B","B có khối lượng riêng lớn hơn A","Hai vật có khối lượng riêng bằng nhau","Không thể so sánh"],c:0},
+{q:"VẬT LÍ: Vật có D=800 kg/m³ và V=0,02 m³. Khối lượng là bao nhiêu?",a:["16 kg","40 kg","400 kg","1 600 kg"],c:0},
+{q:"HÓA HỌC: Hòa tan 10 g muối vào 80 g nước. Nồng độ phần trăm xấp xỉ bằng bao nhiêu?",a:["10%","11,1%","12,5%","20%"],c:1},
+{q:"HÓA HỌC: Hòa tan 20 g đường vào 180 g nước. Nồng độ phần trăm là bao nhiêu?",a:["10%","11,1%","20%","25%"],c:0},
+{q:"HÓA HỌC: Pha 200 g dung dịch muối nồng độ 5% cần bao nhiêu gam muối?",a:["5 g","10 g","20 g","40 g"],c:1},
+{q:"HÓA HỌC: Trong phản ứng hóa học, phát biểu nào đúng về khối lượng?",a:["Chất phản ứng luôn nhẹ hơn sản phẩm","Chất phản ứng luôn nặng hơn sản phẩm","Tổng khối lượng chất phản ứng bằng sản phẩm","Khối lượng luôn bằng 0"],c:2},
+{q:"HÓA HỌC: Dấu hiệu nào có thể cho thấy phản ứng hóa học xảy ra?",a:["Nước đá tan","Nước bay hơi","Xuất hiện chất khí hoặc kết tủa mới","Đường được nghiền nhỏ"],c:2},
+{q:"SINH HỌC: Cơ quan nào bơm máu đi khắp cơ thể?",a:["Phổi","Tim","Gan","Dạ dày"],c:1},
+{q:"SINH HỌC: Trao đổi khí ở phổi diễn ra chủ yếu tại đâu?",a:["Khí quản","Phế quản","Phế nang","Thanh quản"],c:2},
+{q:"SINH HỌC: Thành phần máu vận chuyển oxygen chủ yếu là gì?",a:["Hồng cầu","Bạch cầu","Tiểu cầu","Huyết tương"],c:0},
+{q:"ĐỊA LÍ: Nguyên nhân chủ yếu tạo nên khác biệt khí hậu Bắc – Nam Việt Nam?",a:["Việt Nam nằm hoàn toàn trong ôn đới","Lãnh thổ kéo dài Bắc – Nam và chịu tác động gió mùa","Miền Nam gần cực Bắc hơn","Việt Nam không chịu ảnh hưởng của biển"],c:1},
+{q:"ĐỊA LÍ: Đặc điểm phù hợp với khí hậu nhiệt đới gió mùa Việt Nam là gì?",a:["Nhiệt độ thấp quanh năm, không mưa","Thay đổi theo mùa và chịu ảnh hưởng gió mùa","Chỉ có mùa đông quanh năm","Thời tiết mọi vùng hoàn toàn giống nhau"],c:1},
+{q:"LỊCH SỬ: Chiến thắng Bạch Đằng năm 938 gắn với ai?",a:["Trần Hưng Đạo","Ngô Quyền","Lê Lợi","Quang Trung"],c:1},
+{q:"LỊCH SỬ: Phong trào Tây Sơn gắn với ba anh em nào?",a:["Nguyễn Huệ, Nguyễn Nhạc, Nguyễn Lữ","Nguyễn Trãi, Nguyễn Huệ, Nguyễn Ánh","Trần Quốc Tuấn, Trần Quang Khải, Trần Nhật Duật","Lê Lợi, Lê Lai, Nguyễn Trãi"],c:0},
+{q:"LỊCH SỬ: Chiến thắng Ngọc Hồi – Đống Đa năm 1789 gắn với ai?",a:["Ngô Quyền","Lê Lợi","Quang Trung – Nguyễn Huệ","Trần Hưng Đạo"],c:2},
+{q:"ENGLISH: If it rains tomorrow, we _____ at home.",a:["stay","stayed","will stay","staying"],c:2},
+{q:"ENGLISH: Choose the correct sentence.",a:["She enjoys read books.","She enjoys reading books.","She enjoy reading books.","She enjoying read books."],c:1},
+{q:"ENGLISH: This exercise is _____ than the last one.",a:["difficult","more difficult","most difficult","the difficult"],c:1},
+{q:"ENGLISH: Although he was tired, he _____ his homework.",a:["finish","finishes","finished","finishing"],c:2}
 ];
 
+let questions=[];
 let scene,camera,renderer,clock,penguin,fishBucket,moon;
 let ambientLight,skyLight,snow,stars=[];
 let iceRows=[],returnRows=[];
@@ -108,6 +135,19 @@ let timerInterval=null,timeLeft=15,messageTimeout=null;
 const laneX=[-4.2,-1.4,1.4,4.2];
 const RETURN_ROW_COUNT=9;
 const RETURN_SPACING=4.1;
+
+function shuffle(arr){
+const a=arr.slice();
+for(let i=a.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[a[i],a[j]]=[a[j],a[i]];
+}
+return a;
+}
+
+function chooseQuestions(){
+questions=shuffle(questionBank).slice(0,7);
+}
 
 function init(){
 scene=new THREE.Scene();
@@ -134,12 +174,12 @@ scene.add(skyLight);
 buildWater();
 buildShore(-31);
 buildShore(12);
+buildDistantIcebergs();
 buildPenguin();
 buildBucket();
 buildIceRows();
 buildSnow();
 buildStars();
-
 window.addEventListener("resize",resize);
 animate();
 }
@@ -149,41 +189,36 @@ return new THREE.MeshStandardMaterial({color,roughness,metalness});
 }
 
 function buildWater(){
-const water=new THREE.Mesh(
-new THREE.PlaneGeometry(200,200),
-mat(0x6fc9e8,.35)
-);
+const water=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat(0x6fc9e8,.35));
 water.rotation.x=-Math.PI/2;
 water.position.set(0,-.6,-15);
 scene.add(water);
-
 for(let i=0;i<30;i++){
-const line=new THREE.Mesh(
-new THREE.BoxGeometry(1.3,.025,.035),
-mat(0xc8f5ff)
-);
+const line=new THREE.Mesh(new THREE.BoxGeometry(1.3,.025,.035),mat(0xc8f5ff));
 line.position.set((Math.random()-.5)*38,-.53,-30+Math.random()*50);
 scene.add(line);
 }
 }
 
 function buildShore(z){
-const land=new THREE.Mesh(
-new THREE.BoxGeometry(24,.8,12),
-mat(0xe8f5fa)
-);
+const land=new THREE.Mesh(new THREE.BoxGeometry(24,.8,12),mat(0xe8f5fa));
 land.position.set(0,-.15,z);
 land.receiveShadow=true;
 scene.add(land);
-
 for(let i=0;i<16;i++){
-const rock=new THREE.Mesh(
-new THREE.DodecahedronGeometry(.3+Math.random()*.4,0),
-mat(0xb7dce9)
-);
+const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.3+Math.random()*.4,0),mat(0xb7dce9));
 rock.position.set(-11+Math.random()*22,.28,z-5+Math.random()*10);
 rock.scale.y=.45;
 scene.add(rock);
+}
+}
+
+function buildDistantIcebergs(){
+for(let i=0;i<18;i++){
+const h=5+Math.random()*10;
+const m=new THREE.Mesh(new THREE.ConeGeometry(3+Math.random()*4,h,5),mat(i%2?0xc8eefa:0xa8d9ee));
+m.position.set((Math.random()-.5)*90,h/2-.5,-35+Math.random()*60);
+scene.add(m);
 }
 }
 
@@ -191,7 +226,6 @@ function buildPenguin(){
 penguin=new THREE.Group();
 const black=mat(0x202f43),white=mat(0xf5fbff);
 const orange=mat(0xffa52e),eye=mat(0x101820);
-
 function sphere(r,m,x,y,z,sx=1,sy=1,sz=1){
 const o=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);
 o.position.set(x,y,z);
@@ -200,60 +234,40 @@ o.castShadow=true;
 penguin.add(o);
 return o;
 }
-
 sphere(.58,black,0,.9,0,.85,1.1,.72);
 sphere(.43,white,0,.9,-.39,.8,1,.25);
 sphere(.36,black,0,1.72,-.02,.9,1,.8);
 sphere(.07,eye,-.13,1.79,-.34);
 sphere(.07,eye,.13,1.79,-.34);
 sphere(.12,orange,0,1.62,-.4,1,.5,1);
-
 for(const s of [-1,1]){
 const wing=sphere(.18,black,s*.52,1.02,-.02,1.2,.48,.65);
 wing.rotation.z=s*.25;
 sphere(.2,orange,s*.23,.27,-.02,1,.4,1.4);
 }
-
 penguin.position.set(laneX[lane],.15,4.3);
 scene.add(penguin);
 }
 
 function buildBucket(){
 fishBucket=new THREE.Group();
-
-const body=new THREE.Mesh(
-new THREE.CylinderGeometry(.42,.3,.65,16,1,true),
-mat(0x8cbdcc)
-);
+const body=new THREE.Mesh(new THREE.CylinderGeometry(.42,.3,.65,16,1,true),mat(0x8cbdcc));
 body.position.y=.35;
 fishBucket.add(body);
-
-const rim=new THREE.Mesh(
-new THREE.TorusGeometry(.4,.045,8,20),
-mat(0xe4f7ff)
-);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(.4,.045,8,20),mat(0xe4f7ff));
 rim.rotation.x=Math.PI/2;
 rim.position.y=.67;
 fishBucket.add(rim);
-
-const handle=new THREE.Mesh(
-new THREE.TorusGeometry(.29,.035,8,20,Math.PI),
-mat(0xeffaff)
-);
+const handle=new THREE.Mesh(new THREE.TorusGeometry(.29,.035,8,20,Math.PI),mat(0xeffaff));
 handle.position.y=.68;
 handle.rotation.z=Math.PI;
 fishBucket.add(handle);
-
 for(let i=0;i<3;i++){
-const fish=new THREE.Mesh(
-new THREE.SphereGeometry(.12,10,8),
-mat(0xffb84d)
-);
+const fish=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),mat(0xffb84d));
 fish.position.set((i-1)*.17,.58,.05);
 fish.scale.set(1,.5,.5);
 fishBucket.add(fish);
 }
-
 fishBucket.position.set(0,0,-32);
 fishBucket.visible=false;
 scene.add(fishBucket);
@@ -261,31 +275,18 @@ scene.add(fishBucket);
 
 function makeTile(x,z,w=2.45,d=2.5){
 const group=new THREE.Group();
-
-const base=new THREE.Mesh(
-new THREE.BoxGeometry(w,.32,d),
-mat(0x8fdcf4,.25,.1)
-);
+const base=new THREE.Mesh(new THREE.BoxGeometry(w,.32,d),mat(0x8fdcf4,.25,.1));
 group.add(base);
-
-const top=new THREE.Mesh(
-new THREE.BoxGeometry(w-.12,.09,d-.14),
-mat(0xe8fbff,.2)
-);
+const top=new THREE.Mesh(new THREE.BoxGeometry(w-.12,.09,d-.14),mat(0xe8fbff,.2));
 top.position.y=.2;
 group.add(top);
-
 for(let i=0;i<3;i++){
-const crack=new THREE.Mesh(
-new THREE.BoxGeometry(.04,.015,.7),
-mat(0x468ca9)
-);
+const crack=new THREE.Mesh(new THREE.BoxGeometry(.04,.015,.7),mat(0x468ca9));
 crack.position.set((i-1)*.45,.252,(i%2)*.3-.1);
 crack.rotation.y=.4;
 crack.visible=false;
 group.add(crack);
 }
-
 group.position.set(x,0,z);
 scene.add(group);
 group.userData.cracks=group.children.slice(2);
@@ -294,11 +295,10 @@ return group;
 }
 
 function buildIceRows(){
-for(let r=0;r<questions.length;r++){
+iceRows=[];
+for(let r=0;r<7;r++){
 const tiles=[];
-for(let l=0;l<4;l++){
-tiles.push(makeTile(laneX[l],-r*4.1));
-}
+for(let l=0;l<4;l++)tiles.push(makeTile(laneX[l],-r*4.1));
 iceRows.push(tiles);
 }
 }
@@ -307,22 +307,17 @@ function buildSnow(){
 const count=1300;
 const positions=new Float32Array(count*3);
 const velocities=new Float32Array(count);
-
 for(let i=0;i<count;i++){
 positions[i*3]=(Math.random()-.5)*65;
 positions[i*3+1]=Math.random()*28;
 positions[i*3+2]=-40+Math.random()*65;
 velocities[i]=1.3+Math.random()*3.4;
 }
-
 const geo=new THREE.BufferGeometry();
 geo.setAttribute("position",new THREE.BufferAttribute(positions,3));
-snow=new THREE.Points(
-geo,
-new THREE.PointsMaterial({
+snow=new THREE.Points(geo,new THREE.PointsMaterial({
 color:0xffffff,size:.12,transparent:true,opacity:.9,sizeAttenuation:true
-})
-);
+}));
 snow.userData.velocities=velocities;
 scene.add(snow);
 }
@@ -330,26 +325,15 @@ scene.add(snow);
 function buildStars(){
 const positions=[];
 for(let i=0;i<450;i++){
-positions.push(
-(Math.random()-.5)*120,
-8+Math.random()*45,
--55+Math.random()*80
-);
+positions.push((Math.random()-.5)*120,8+Math.random()*45,-55+Math.random()*80);
 }
 const geo=new THREE.BufferGeometry();
 geo.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
-const s=new THREE.Points(
-geo,
-new THREE.PointsMaterial({color:0xffffff,size:.16})
-);
+const s=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.16}));
 s.visible=false;
 scene.add(s);
 stars.push(s);
-
-moon=new THREE.Mesh(
-new THREE.SphereGeometry(2,24,20),
-new THREE.MeshBasicMaterial({color:0xfff0bc})
-);
+moon=new THREE.Mesh(new THREE.SphereGeometry(2,24,20),new THREE.MeshBasicMaterial({color:0xfff0bc}));
 moon.position.set(13,17,-38);
 moon.visible=false;
 scene.add(moon);
@@ -389,9 +373,7 @@ function msg(text,ms=1100){
 $("message").textContent=text;
 $("message").style.display="block";
 clearTimeout(messageTimeout);
-if(ms>0){
-messageTimeout=setTimeout(()=>{$("message").style.display="none";},ms);
-}
+if(ms>0)messageTimeout=setTimeout(()=>{$("message").style.display="none";},ms);
 }
 
 function stopTimer(){
@@ -406,7 +388,6 @@ stopTimer();
 timeLeft=15;
 $("timer").textContent="⏱ 15 giây";
 $("timer").style.color="#fff1a6";
-
 timerInterval=setInterval(()=>{
 if(!started||phase!=="outbound"||busy){
 stopTimer();
@@ -415,7 +396,6 @@ return;
 timeLeft--;
 $("timer").textContent="⏱ "+timeLeft+" giây";
 if(timeLeft<=5)$("timer").style.color="#ff7777";
-
 if(timeLeft<=0){
 stopTimer();
 busy=true;
@@ -433,8 +413,8 @@ return;
 }
 const q=questions[row];
 $("qtext").textContent=q.q;
-$("answers").innerHTML=q.a.map(
-(a,i)=>'<div class="ans">'+String.fromCharCode(65+i)+". "+a+"</div>"
+$("answers").innerHTML=q.a.map((a,i)=>
+'<div class="ans">'+String.fromCharCode(65+i)+". "+a+"</div>"
 ).join("");
 $("progress").textContent="Câu "+(row+1)+"/"+questions.length;
 $("stage").textContent="🐧 MÀN 1: ĐI LẤY CÁ";
@@ -458,11 +438,9 @@ tile.position.y=-.25;
 
 function jump(){
 if(!started||busy||falling||jumping)return;
-
 if(phase==="outbound"){
 if(!iceRows[row]||!iceRows[row][lane])return;
 stopTimer();
-
 const tile=iceRows[row][lane];
 busy=true;
 jumping=true;
@@ -471,12 +449,10 @@ jumpFrom.copy(penguin.position);
 jumpTo.set(laneX[lane],.15,tile.position.z+.25);
 penguin.userData.jumpCorrect=(lane===questions[row].c);
 msg("Đang nhảy lên tảng băng...",0);
-
 }else if(phase==="return"){
 const tiles=returnRows[step];
 const tile=tiles&&tiles[lane];
 if(!tile)return;
-
 busy=true;
 jumping=true;
 jumpStart=performance.now();
@@ -504,22 +480,19 @@ row=0;
 lane=1;
 step=0;
 phase="outbound";
+chooseQuestions();
 penguin.position.set(laneX[lane],.15,4.3);
 penguin.rotation.set(0,0,0);
-
 iceRows.forEach(r=>r.forEach(t=>{
-t.position.y=0;
-t.rotation.z=0;
-t.userData.cracked=false;
+t.position.y=0;t.rotation.z=0;t.userData.cracked=false;
 t.userData.cracks.forEach(c=>c.visible=false);
 }));
-
 returnRows.forEach(r=>r.forEach(t=>scene.remove(t)));
 returnRows=[];
 setNight(false);
 $("quiz").style.display="block";
 showQuestion();
-msg("Thử lại chặng đi lấy cá nhé!",1300);
+msg("Thử lại nhé! Bộ câu hỏi đã được đổi.",1500);
 }
 
 function reachShore(){
@@ -530,7 +503,6 @@ $("quiz").style.display="none";
 penguin.position.set(0,.15,-29);
 fishBucket.visible=true;
 msg("Đã sang bờ! Đến lấy xô cá nào!",1500);
-
 setTimeout(()=>{
 if(!started)return;
 fishBucket.visible=false;
@@ -541,11 +513,9 @@ startReturn();
 function createReturnRows(){
 returnRows.forEach(r=>r.forEach(t=>scene.remove(t)));
 returnRows=[];
-
 for(let r=0;r<RETURN_ROW_COUNT;r++){
 const tiles=[];
-const weak=[0,1,2,3].sort(()=>Math.random()-.5).slice(0,1);
-
+const weak=shuffle([0,1,2,3]).slice(0,2);
 for(let l=0;l<4;l++){
 const z=-25+r*RETURN_SPACING;
 const tile=makeTile(laneX[l],z,2.1,2.2);
@@ -567,7 +537,6 @@ setNight(true);
 createReturnRows();
 penguin.position.set(laneX[lane],.15,-29);
 penguin.rotation.set(0,Math.PI,0);
-
 $("stage").textContent="🌙 MÀN 2: TRỞ VỀ";
 $("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
 $("quiz").style.display="none";
@@ -582,14 +551,10 @@ busy=false;
 phase="return";
 step=0;
 lane=1;
-
 returnRows.forEach(r=>r.forEach(t=>{
-t.position.y=0;
-t.rotation.z=0;
-t.userData.cracked=false;
+t.position.y=0;t.rotation.z=0;t.userData.cracked=false;
 t.userData.cracks.forEach(c=>c.visible=false);
 }));
-
 penguin.position.set(laneX[lane],.15,-29);
 penguin.rotation.set(0,Math.PI,0);
 $("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
@@ -612,6 +577,7 @@ $("quiz").style.display="none";
 
 function startGame(){
 $("overlay").style.display="none";
+chooseQuestions();
 started=true;
 phase="outbound";
 row=0;
@@ -625,14 +591,10 @@ penguin.position.set(laneX[lane],.15,4.3);
 penguin.rotation.set(0,0,0);
 fishBucket.visible=false;
 $("hint").textContent="← → chọn đáp án · SPACE nhảy · WASD cũng dùng được";
-
 iceRows.forEach(r=>r.forEach(t=>{
-t.position.y=0;
-t.rotation.z=0;
-t.userData.cracked=false;
+t.position.y=0;t.rotation.z=0;t.userData.cracked=false;
 t.userData.cracks.forEach(c=>c.visible=false);
 }));
-
 showQuestion();
 }
 
@@ -643,7 +605,6 @@ const dt=Math.min(clock.getDelta(),.05);
 if(snow){
 const p=snow.geometry.attributes.position.array;
 const v=snow.userData.velocities;
-
 for(let i=0;i<v.length;i++){
 p[i*3+1]-=v[i]*dt;
 p[i*3]+=Math.sin(performance.now()*.0005+i)*dt*.18;
@@ -662,17 +623,14 @@ penguin.position.x=THREE.MathUtils.lerp(jumpFrom.x,jumpTo.x,t);
 penguin.position.z=THREE.MathUtils.lerp(jumpFrom.z,jumpTo.z,t);
 penguin.position.y=.15+Math.sin(t*Math.PI)*1.7;
 penguin.rotation.x=Math.sin(t*Math.PI)*.12;
-
 if(t>=1){
 jumping=false;
 penguin.position.copy(jumpTo);
 penguin.rotation.x=0;
-
 if(phase==="outbound"){
 if(penguin.userData.jumpCorrect){
 msg("Chính xác! Em đã đứng trên băng! ✔",850);
 row++;
-
 setTimeout(()=>{
 if(!started)return;
 busy=false;
@@ -688,17 +646,14 @@ breakTile(iceRows[row][lane]);
 msg("Sai đáp án! Băng vỡ!",1300);
 setTimeout(()=>fall(resetStart),300);
 }
-
 }else if(phase==="return"){
 const tile=penguin.userData.returnTile;
-
 if(tile&&tile.userData.weak){
 breakTile(tile);
 msg("Băng yếu vỡ rồi! Chim rơi xuống nước!",1300);
 setTimeout(()=>fall(resetBucket),300);
 }else{
 step++;
-
 if(step>=RETURN_ROW_COUNT){
 msg("Về tới bờ an toàn!",1000);
 setTimeout(win,1000);
@@ -727,34 +682,15 @@ setTimeout(cb,450);
 }
 
 let desiredCam,lookAt;
-
 if(phase==="return"){
-desiredCam=new THREE.Vector3(
-penguin.position.x*.35,
-5.8,
-penguin.position.z-8.5
-);
-lookAt=new THREE.Vector3(
-penguin.position.x*.35,
-1.0,
-penguin.position.z+4.5
-);
+desiredCam=new THREE.Vector3(penguin.position.x*.35,5.8,penguin.position.z-8.5);
+lookAt=new THREE.Vector3(penguin.position.x*.35,1.0,penguin.position.z+4.5);
 }else{
-desiredCam=new THREE.Vector3(
-penguin.position.x*.55,
-4.8,
-penguin.position.z+8.5
-);
-lookAt=new THREE.Vector3(
-penguin.position.x*.55,
-1.1,
-penguin.position.z-3.2
-);
+desiredCam=new THREE.Vector3(penguin.position.x*.55,4.8,penguin.position.z+8.5);
+lookAt=new THREE.Vector3(penguin.position.x*.55,1.1,penguin.position.z-3.2);
 }
-
 camera.position.lerp(desiredCam,.09);
 camera.lookAt(lookAt);
-
 if(fishBucket.visible)fishBucket.rotation.y+=dt*.7;
 renderer.render(scene,camera);
 }
@@ -762,16 +698,11 @@ renderer.render(scene,camera);
 $("start").addEventListener("click",startGame);
 $("left").addEventListener("click",()=>move(-1));
 $("right").addEventListener("click",()=>move(1));
-$("up").addEventListener("click",()=>{
-if(phase==="outbound"||phase==="return")jump();
-});
+$("up").addEventListener("click",jump);
 $("down").addEventListener("click",()=>move(0));
 $("jump").addEventListener("click",jump);
-
 window.addEventListener("keydown",e=>{
-if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","a","d","w","s","A","D","W","S"].includes(e.key)){
-e.preventDefault();
-}
+if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","a","d","w","s","A","D","W","S"].includes(e.key))e.preventDefault();
 if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A")move(-1);
 if(e.key==="ArrowRight"||e.key==="d"||e.key==="D")move(1);
 if(e.key===" "||e.key==="Enter"||e.key==="ArrowUp"||e.key==="w"||e.key==="W")jump();
