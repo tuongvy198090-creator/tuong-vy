@@ -99,7 +99,12 @@ button:active{transform:translateY(2px);box-shadow:0 2px 0 #07577e}
 
 <div id="hud">
 <div class="pill" id="stage">🐧 MÀN 1: ĐI LẤY CÁ</div>
-<div class="pill" id="progress">Câu 1/7</div>
+<div style="display:flex;align-items:center;gap:8px;pointer-events:auto">
+    <div class="pill" id="progress">Câu 1/7</div>
+    <button id="settingsBtn" title="Cài đặt"
+        style="padding:8px 11px;border-radius:14px;background:#092c49dd;
+        color:white;font-size:20px;box-shadow:none">⚙️</button>
+</div>
 </div>
 
 <div id="quiz">
