@@ -545,6 +545,8 @@ function win(){
     busy = true;
     started = false;
     stopTimer();
+    stopAllAudio();
+playEffect("win");
 
     $("overlay").style.display = "flex";
 
@@ -830,6 +832,16 @@ $("resumeBtn").addEventListener("click", closeSettings);
 
 $("soundToggle").addEventListener("change", function(){
     soundEnabled = this.checked;
+
+    if(!soundEnabled){
+        stopAllAudio();
+    }else if(started){
+        if(phase === "outbound"){
+            playBackground("day");
+        }else if(phase === "return"){
+            playBackground("night");
+        }
+    }
 });
 
 $("restartBtn").addEventListener("click", function(){
