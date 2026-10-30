@@ -722,6 +722,75 @@ renderer.render(scene,camera);
 let gamePaused = false;
 let soundEnabled = true;
 
+// ===== HỆ THỐNG ÂM THANH =====
+const audioBase = "/app/static/audio/";
+
+const bgDay = new Audio(audioBase + "nhac-nen-ban-ngay.mp3");
+const bgNight = new Audio(audioBase + "nhac-nen-ban-dem.mp3");
+
+const sounds = {
+    warning: new Audio(audioBase + "nhac-canh-bao.mp3"),
+    correct: new Audio(audioBase + "am-thanh-dung.mp3"),
+    wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
+    win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
+};
+
+bgDay.loop = true;
+bgNight.loop = true;
+bgDay.volume = 0.25;
+bgNight.volume = 0.25;
+
+let currentBg = null;
+let activeSound = null;
+
+function playBackground(type) {
+    if (!soundEnabled) return;
+
+    bgDay.pause();
+    bgNight.pause();
+
+    currentBg = type === "day" ? bgDay : bgNight;
+    currentBg.currentTime = 0;
+    currentBg.play().catch(() => {});
+}
+
+function playEffect(type) {
+    if (!soundEnabled) return;
+
+    if (activeSound) {
+        activeSound.pause();
+        activeSound.currentTime = 0;
+    }
+
+    const sound = sounds[type];
+    if (!sound) return;
+
+    activeSound = sound;
+
+    if (currentBg) currentBg.volume = 0.08;
+
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+
+    sound.onended = () => {
+        if (currentBg && soundEnabled) currentBg.volume = 0.25;
+        activeSound = null;
+    };
+}
+
+function stopAllAudio() {
+    bgDay.pause();
+    bgNight.pause();
+
+    Object.values(sounds).forEach(sound => {
+        sound.pause();
+        sound.currentTime = 0;
+    });
+
+    currentBg = null;
+    activeSound = null;
+}
+
 function openSettings(){
     if(!started || gamePaused) return;
 
