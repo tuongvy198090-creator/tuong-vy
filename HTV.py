@@ -525,7 +525,7 @@ returnRows.push(tiles);
 }
 }
 function startReturn(){
-phase="return";step=0;lane=1;busy=false;jumping=false;falling=false;setNight(true);createReturnRows();
+phase="return";step=0;lane=1;busy=false;jumping=false;falling=false;setNight(true);playBackground("night");createReturnRows();
 penguin.position.set(laneX[lane],.15,-29);penguin.rotation.set(0,Math.PI,0);
 fishBucket.visible=true;fishBucket.position.set(penguin.position.x+1.05,.15,penguin.position.z);
 $("stage").textContent="🌙 MÀN 2: TRỞ VỀ";$("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
@@ -646,7 +646,11 @@ function win(){
 }
 
 function startGame(){
-$("overlay").style.display="none";chooseQuestions();started=true;phase="outbound";
+$("overlay").style.display="none";
+chooseQuestions();
+started=true;
+phase="outbound";
+playBackground("day");
 row=0;lane=1;step=0;busy=false;jumping=false;falling=false;setNight(false);
 penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
 fishBucket.visible=false;$("hint").textContent="← → chọn đáp án · ↑ tiến · ↓ lùi · SPACE nhảy";
@@ -682,7 +686,7 @@ if(t>=1){
 jumping=false;penguin.position.copy(jumpTo);penguin.rotation.x=0;
 if(phase==="outbound"){
 if(penguin.userData.jumpCorrect){
-msg("Chính xác! Em đã đứng trên băng! ✔",850);row++;
+msg("Chính xác! Em đã đứng trên băng! ✔",850);playEffect("correct");row++;
 setTimeout(()=>{if(!started)return;busy=false;if(row>=questions.length)reachShore();else{penguin.position.z=iceRows[row][0].position.z+2.7;showQuestion()}},600);
 }else{breakTile(iceRows[row][lane]);msg("Sai đáp án! Băng vỡ!",1300);setTimeout(()=>fall(resetStart),300)}
 }else if(phase==="return"){
@@ -721,6 +725,18 @@ renderer.render(scene,camera);
 
 let gamePaused = false;
 let soundEnabled = true;
+// ÂM THANH GAME CHIM CÁNH CỤT
+const audioBase = "/app/static/audio/";
+
+const bgDay = new Audio(audioBase + "nhac-nen-ban-ngay.mp3");
+const bgNight = new Audio(audioBase + "nhac-nen-ban-dem.mp3");
+
+const sounds = {
+    warning: new Audio(audioBase + "nhac-canh-bao.mp3"),
+    correct: new Audio(audioBase + "am-thanh-dung.mp3"),
+    wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
+    win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
+};
 
 // ===== HỆ THỐNG ÂM THANH =====
 const audioBase = "/app/static/audio/";
