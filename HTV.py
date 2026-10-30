@@ -436,40 +436,13 @@ if(ms>0)messageTimeout=setTimeout(()=>$("message").style.display="none",ms);
 }
 function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null}}
 function startTimer(){
-    stopTimer();
-    timeLeft=15;
-    let warningPlayed=false;
-
-    $("timer").textContent="⏱ 15 giây";
-    $("timer").style.color="#fff1a6";
-
-    timerInterval=setInterval(()=>{
-        if(!started||phase!=="outbound"||busy){
-            stopTimer();
-            return;
-        }
-
-        timeLeft--;
-        $("timer").textContent="⏱ "+timeLeft+" giây";
-
-        if(timeLeft<=5){
-            $("timer").style.color="#ff7777";
-
-            if(timeLeft===5 && !warningPlayed){
-                playEffect("warning");
-                warningPlayed=true;
-            }
-        }
-
-        if(timeLeft<=0){
-            stopTimer();
-            playEffect("wrong");
-            breakTile(iceRows[row][lane]);
-            msg("Hết giờ! Tảng băng vỡ rồi!",1400);
-            busy=true;
-            setTimeout(()=>fall(resetStart),300);
-        }
-    },1000);
+stopTimer();timeLeft=15;$("timer").textContent="⏱ 15 giây";$("timer").style.color="#fff1a6";
+timerInterval=setInterval(()=>{
+if(!started||phase!=="outbound"||busy){stopTimer();return}
+timeLeft--;$("timer").textContent="⏱ "+timeLeft+" giây";
+if(timeLeft<=5)$("timer").style.color="#ff7777";
+if(timeLeft<=0){stopTimer();breakTile(iceRows[row][lane]);msg("Hết giờ! Tảng băng vỡ rồi!",1400);busy=true;setTimeout(()=>fall(resetStart),300)}
+},1000);
 }
 function showQuestion(){
 if(row>=questions.length){reachShore();return}
@@ -553,7 +526,6 @@ returnRows.push(tiles);
 }
 function startReturn(){
 phase="return";step=0;lane=1;busy=false;jumping=false;falling=false;setNight(true);createReturnRows();
-playBackground("night");
 penguin.position.set(laneX[lane],.15,-29);penguin.rotation.set(0,Math.PI,0);
 fishBucket.visible=true;fishBucket.position.set(penguin.position.x+1.05,.15,penguin.position.z);
 $("stage").textContent="🌙 MÀN 2: TRỞ VỀ";$("progress").textContent="Hàng băng 1/"+RETURN_ROW_COUNT;
@@ -573,8 +545,6 @@ function win(){
     busy = true;
     started = false;
     stopTimer();
-    stopAllAudio();
-playEffect("win");
 
     $("overlay").style.display = "flex";
 
@@ -677,7 +647,6 @@ playEffect("win");
 
 function startGame(){
 $("overlay").style.display="none";chooseQuestions();started=true;phase="outbound";
-playBackground("day");
 row=0;lane=1;step=0;busy=false;jumping=false;falling=false;setNight(false);
 penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
 fishBucket.visible=false;$("hint").textContent="← → chọn đáp án · ↑ tiến · ↓ lùi · SPACE nhảy";
@@ -714,18 +683,13 @@ jumping=false;penguin.position.copy(jumpTo);penguin.rotation.x=0;
 if(phase==="outbound"){
 if(penguin.userData.jumpCorrect){
 msg("Chính xác! Em đã đứng trên băng! ✔",850);row++;
-playEffect("correct");
 setTimeout(()=>{if(!started)return;busy=false;if(row>=questions.length)reachShore();else{penguin.position.z=iceRows[row][0].position.z+2.7;showQuestion()}},600);
 }else{breakTile(iceRows[row][lane]);msg("Sai đáp án! Băng vỡ!",1300);setTimeout(()=>fall(resetStart),300)}
-playEffect("wrong");
 }else if(phase==="return"){
 const tile=penguin.userData.returnTile;
 if(tile&&tile.userData.weak){
-playEffect("wrong");
 breakTile(tile);msg("Băng yếu vỡ rồi! Chim rơi xuống nước!",1300);setTimeout(()=>fall(resetBucket),300);
 }else{
-}else{
-playEffect("correct");
 step++;
 if(step>=RETURN_ROW_COUNT){msg("Về tới bờ an toàn!",1000);setTimeout(win,1000)}
 else{$("progress").textContent="Hàng băng "+(step+1)+"/"+RETURN_ROW_COUNT;msg("Đã đáp xuống! Nhảy tiếp về phía trước!",900);setTimeout(()=>{busy=false},500)}
@@ -757,75 +721,6 @@ renderer.render(scene,camera);
 
 let gamePaused = false;
 let soundEnabled = true;
-// ===== HỆ THỐNG ÂM THANH =====
-const audioBase = "/app/static/audio/";
-
-const bgDay = new Audio(audioBase + "nhac-nen-ban-ngay.mp3");
-const bgNight = new Audio(audioBase + "nhac-nen-ban-dem.mp3");
-
-const sounds = {
-    warning: new Audio(audioBase + "nhac-canh-bao.mp3"),
-    correct: new Audio(audioBase + "am-thanh-dung.mp3"),
-    wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
-    win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
-};
-
-bgDay.loop = true;
-bgNight.loop = true;
-
-bgDay.volume = 0.25;
-bgNight.volume = 0.25;
-
-let currentBg = null;
-let activeSound = null;
-
-function playBackground(type) {
-    if (!soundEnabled) return;
-
-    bgDay.pause();
-    bgNight.pause();
-
-    currentBg = type === "day" ? bgDay : bgNight;
-    currentBg.currentTime = 0;
-    currentBg.play().catch(() => {});
-}
-
-function playEffect(type) {
-    if (!soundEnabled) return;
-
-    if (activeSound) {
-        activeSound.pause();
-        activeSound.currentTime = 0;
-    }
-
-    const sound = sounds[type];
-    if (!sound) return;
-
-    activeSound = sound;
-    sound.currentTime = 0;
-
-    if (currentBg) currentBg.volume = 0.08;
-
-    sound.play().catch(() => {});
-
-    sound.onended = () => {
-        if (currentBg && soundEnabled) currentBg.volume = 0.25;
-        activeSound = null;
-    };
-}
-
-function stopAllAudio() {
-    bgDay.pause();
-    bgNight.pause();
-
-    Object.values(sounds).forEach(sound => {
-        sound.pause();
-        sound.currentTime = 0;
-    });
-
-    currentBg = null;
-    activeSound = null;
-}
 
 function openSettings(){
     if(!started || gamePaused) return;
@@ -850,18 +745,6 @@ $("resumeBtn").addEventListener("click", closeSettings);
 
 $("soundToggle").addEventListener("change", function(){
     soundEnabled = this.checked;
-
-    if(!soundEnabled){
-        stopAllAudio();
-    }else{
-        if(started){
-            if(phase==="outbound"){
-                playBackground("day");
-            }else if(phase==="return"){
-                playBackground("night");
-            }
-        }
-    }
 });
 
 $("restartBtn").addEventListener("click", function(){
