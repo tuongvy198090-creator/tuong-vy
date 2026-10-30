@@ -31,7 +31,6 @@ canvas{width:100%;height:100%;display:block}
 .panel{position:relative;overflow:hidden;width:min(95%,590px);background:linear-gradient(155deg,#fffef2f5 0%,#d9f5fff5 55%,#a8e4fff5 100%);color:#12324a;border:3px solid #ffffff;border-radius:30px;padding:30px;text-align:center;box-shadow:0 20px 65px #002b4c88,inset 0 0 0 2px #8bd8f477}
 .panel:before{content:"❄  ✦  ❄  ✦  ❄";display:block;color:#4badd7;font-size:19px;letter-spacing:12px;margin-bottom:10px}
 .panel:after{content:"🐟  ❄  🐟";display:block;font-size:23px;letter-spacing:12px;margin-top:16px;opacity:.85}
-/* Tiêu đề tròn trịa, dễ thương như sticker */
 .panel h1 {
     position: relative;
     display: inline-block;
@@ -53,8 +52,6 @@ canvas{width:100%;height:100%;display:block}
         0 7px 0 #65b9e2,
         0 10px 14px #397ca655;
 }
-
-/* Tuyết phủ trên tiêu đề */
 .panel h1::before {
     content: "❄ ❄ ❄ ❄";
     position: absolute;
@@ -239,6 +236,7 @@ let jumpStart=0,jumpFrom=new THREE.Vector3(),jumpTo=new THREE.Vector3();
 let fallStart=0,fallCallback=null,timerInterval=null,timeLeft=15;
 let messageTimeout=null;
 let penguinEyes=[],penguinWings=[],blinkAt=0,blinkUntil=0;
+let warningPlayed=false;
 const laneX=[-4.2,-1.4,1.4,4.2];
 const RETURN_ROW_COUNT=9,RETURN_SPACING=4.1;
 
@@ -252,6 +250,77 @@ return a;
 function chooseQuestions(){questions=shuffle(questionBank).slice(0,7)}
 function mat(color,roughness=.75,metalness=0){
 return new THREE.MeshStandardMaterial({color,roughness,metalness});
+}
+
+// ===== HỆ THỐNG ÂM THANH: CHỈ KHAI BÁO MỘT LẦN =====
+let gamePaused = false;
+let soundEnabled = true;
+
+const audioBase = "/app/static/audio/";
+const bgDay = new Audio(audioBase + "nhac-nen-ban-ngay.mp3");
+const bgNight = new Audio(audioBase + "nhac-nen-ban-dem.mp3");
+
+const sounds = {
+    warning: new Audio(audioBase + "nhac-canh-bao.mp3"),
+    correct: new Audio(audioBase + "am-thanh-dung.mp3"),
+    wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
+    win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
+};
+
+bgDay.loop = true;
+bgNight.loop = true;
+bgDay.volume = 0.25;
+bgNight.volume = 0.25;
+
+let currentBg = null;
+let activeSound = null;
+
+function playBackground(type) {
+    if (!soundEnabled) return;
+
+    bgDay.pause();
+    bgNight.pause();
+
+    currentBg = type === "day" ? bgDay : bgNight;
+    currentBg.currentTime = 0;
+    currentBg.volume = 0.25;
+    currentBg.play().catch(() => {});
+}
+
+function playEffect(type) {
+    if (!soundEnabled) return;
+
+    if (activeSound) {
+        activeSound.pause();
+        activeSound.currentTime = 0;
+    }
+
+    const sound = sounds[type];
+    if (!sound) return;
+
+    activeSound = sound;
+    if (currentBg) currentBg.volume = 0.08;
+
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+
+    sound.onended = () => {
+        if (currentBg && soundEnabled) currentBg.volume = 0.25;
+        activeSound = null;
+    };
+}
+
+function stopAllAudio() {
+    bgDay.pause();
+    bgNight.pause();
+
+    Object.values(sounds).forEach(sound => {
+        sound.pause();
+        sound.currentTime = 0;
+    });
+
+    currentBg = null;
+    activeSound = null;
 }
 
 function init(){
@@ -436,12 +505,13 @@ if(ms>0)messageTimeout=setTimeout(()=>$("message").style.display="none",ms);
 }
 function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null}}
 function startTimer(){
-stopTimer();timeLeft=15;$("timer").textContent="⏱ 15 giây";$("timer").style.color="#fff1a6";
+stopTimer();timeLeft=15;warningPlayed=false;$("timer").textContent="⏱ 15 giây";$("timer").style.color="#fff1a6";
 timerInterval=setInterval(()=>{
 if(!started||phase!=="outbound"||busy){stopTimer();return}
 timeLeft--;$("timer").textContent="⏱ "+timeLeft+" giây";
 if(timeLeft<=5)$("timer").style.color="#ff7777";
-if(timeLeft<=0){stopTimer();breakTile(iceRows[row][lane]);msg("Hết giờ! Tảng băng vỡ rồi!",1400);busy=true;setTimeout(()=>fall(resetStart),300)}
+if(timeLeft===5&&!warningPlayed){warningPlayed=true;playEffect("warning")}
+if(timeLeft<=0){stopTimer();playEffect("wrong");breakTile(iceRows[row][lane]);msg("Hết giờ! Tảng băng vỡ rồi!",1400);busy=true;setTimeout(()=>fall(resetStart),300)}
 },1000);
 }
 function showQuestion(){
@@ -453,23 +523,16 @@ $("stage").textContent="🐧 MÀN 1: ĐI LẤY CÁ";$("quiz").style.display="blo
 }
 function moveHorizontal(d){
     if(!started || busy || falling || jumping) return;
-
-    // Màn 2: đảo chiều điều khiển
     const direction = phase === "return" ? -d : d;
-
     lane = Math.max(0, Math.min(3, lane + direction));
     penguin.position.x = laneX[lane];
 }
 function move(d){
     if(!started || busy || falling || jumping) return;
     if(d === 0) return;
-
-    // Màn 2 đảo hướng vì chim quay mặt về hướng ngược lại
     const direction = phase === "return" ? -d : d;
-
     lane = Math.max(0, Math.min(3, lane + direction));
     penguin.position.x = laneX[lane];
-
     if(phase === "return" && fishBucket.visible){
         fishBucket.position.x = penguin.position.x + 1.05;
     }
@@ -504,7 +567,7 @@ penguin.position.set(laneX[lane],.15,4.3);penguin.rotation.set(0,0,0);
 fishBucket.visible=false;
 iceRows.forEach(r=>r.forEach(t=>{t.position.y=0;t.rotation.z=0;t.userData.cracked=false;t.userData.cracks.forEach(c=>c.visible=false)}));
 returnRows.forEach(r=>r.forEach(t=>scene.remove(t)));returnRows=[];
-setNight(false);$("quiz").style.display="block";showQuestion();msg("Chơi lại nhé!",1200);
+setNight(false);playBackground("day");$("quiz").style.display="block";showQuestion();msg("Chơi lại nhé!",1200);
 }
 function reachShore(){
 stopTimer();phase="shore";busy=true;$("quiz").style.display="none";
@@ -546,7 +609,7 @@ function win(){
     started = false;
     stopTimer();
     stopAllAudio();
-playEffect("win");
+    playEffect("win");
 
     $("overlay").style.display = "flex";
 
@@ -565,7 +628,6 @@ playEffect("win");
             0 8px 12px #315d7860;
           margin: 12px 0 20px;
         }
-
         .win-text {
           color: #244d68;
           font-size: 17px;
@@ -573,7 +635,6 @@ playEffect("win");
           line-height: 1.8;
           text-shadow: 0 2px 0 white;
         }
-
         .confetti-piece {
           position: fixed;
           top: -20px;
@@ -583,30 +644,20 @@ playEffect("win");
           pointer-events: none;
           animation: confettiFall linear forwards;
         }
-
         @keyframes confettiFall {
-          0% {
-            transform: translateY(-20px) rotate(0deg);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(105vh) rotate(900deg);
-            opacity: 0.85;
-          }
+          0% {transform: translateY(-20px) rotate(0deg);opacity: 1;}
+          100% {transform: translateY(105vh) rotate(900deg);opacity: 0.85;}
         }
-
         .win-penguin {
           font-size: 70px;
           filter: drop-shadow(0 7px 4px #5285a455);
           animation: winBounce 1.2s ease-in-out infinite;
         }
-
         @keyframes winBounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-9px); }
         }
       </style>
-
       <div class="welcome-tag">❄️ CHUYẾN PHIÊU LƯU HOÀN THÀNH ❄️</div>
       <div class="win-penguin">🐧 🐟</div>
       <h1 class="win-title">🎉 CHIẾN THẮNG! 🎉</h1>
@@ -617,7 +668,6 @@ playEffect("win");
       <button id="restart">🔄 CHƠI LẠI</button>
     `;
 
-    // Tạo pháo giấy nhiều màu
     const colors = [
       "#77c9f2", "#ffb8c9", "#ffe08a",
       "#a8e6cf", "#c9b6ff", "#ffffff"
@@ -634,7 +684,6 @@ playEffect("win");
       piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "3px";
       piece.style.animationDuration = (2.5 + Math.random() * 3) + "s";
       piece.style.animationDelay = (Math.random() * 1.8) + "s";
-
       document.body.appendChild(piece);
       confetti.push(piece);
     }
@@ -688,12 +737,20 @@ if(t>=1){
 jumping=false;penguin.position.copy(jumpTo);penguin.rotation.x=0;
 if(phase==="outbound"){
 if(penguin.userData.jumpCorrect){
-msg("Chính xác! Em đã đứng trên băng! ✔",850);playEffect("correct");row++;
+msg("Chính xác! Em đã đứng trên băng! ✔",850);
+playEffect("correct");
+row++;
 setTimeout(()=>{if(!started)return;busy=false;if(row>=questions.length)reachShore();else{penguin.position.z=iceRows[row][0].position.z+2.7;showQuestion()}},600);
-}else{breakTile(iceRows[row][lane]);msg("Sai đáp án! Băng vỡ!",1300);setTimeout(()=>fall(resetStart),300)}
+}else{
+playEffect("wrong");
+breakTile(iceRows[row][lane]);
+msg("Sai đáp án! Băng vỡ!",1300);
+setTimeout(()=>fall(resetStart),300);
+}
 }else if(phase==="return"){
 const tile=penguin.userData.returnTile;
 if(tile&&tile.userData.weak){
+playEffect("wrong");
 breakTile(tile);msg("Băng yếu vỡ rồi! Chim rơi xuống nước!",1300);setTimeout(()=>fall(resetBucket),300);
 }else{
 step++;
@@ -725,146 +782,8 @@ fishBucket.rotation.y+=dt*.7;
 renderer.render(scene,camera);
 }
 
-let gamePaused = false;
-let soundEnabled = true;
-// ÂM THANH GAME CHIM CÁNH CỤT
-const audioBase = "/app/static/audio/";
-
-const bgDay = new Audio(audioBase + "nhac-nen-ban-ngay.mp3");
-const bgNight = new Audio(audioBase + "nhac-nen-ban-dem.mp3");
-
-const sounds = {
-    warning: new Audio(audioBase + "nhac-canh-bao.mp3"),
-    correct: new Audio(audioBase + "am-thanh-dung.mp3"),
-    wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
-    win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
-};
-bgDay.loop = true;
-bgNight.loop = true;
-bgDay.volume = 0.25;
-bgNight.volume = 0.25;
-
-let currentBg = null;
-let activeSound = null;
-
-function playBackground(type) {
-    if (!soundEnabled) return;
-    bgDay.pause();
-    bgNight.pause();
-
-    currentBg = type === "day" ? bgDay : bgNight;
-    currentBg.currentTime = 0;
-    currentBg.play().catch(() => {});
-}
-
-function playEffect(type) {
-    if (!soundEnabled) return;
-
-    if (activeSound) {
-        activeSound.pause();
-        activeSound.currentTime = 0;
-    }
-
-    const sound = sounds[type];
-    if (!sound) return;
-
-    activeSound = sound;
-    if (currentBg) currentBg.volume = 0.08;
-
-    sound.currentTime = 0;
-    sound.play().catch(() => {});
-
-    sound.onended = () => {
-        if (currentBg && soundEnabled) currentBg.volume = 0.25;
-        activeSound = null;
-    };
-}
-
-function stopAllAudio() {
-    bgDay.pause();
-    bgNight.pause();
-
-    Object.values(sounds).forEach(sound => {
-        sound.pause();
-        sound.currentTime = 0;
-    });
-
-    currentBg = null;
-    activeSound = null;
-}
-
-// ===== HỆ THỐNG ÂM THANH =====
-const audioBase = "/app/static/audio/";
-
-const bgDay = new Audio(audioBase + "nhac-nen-ban-ngay.mp3");
-const bgNight = new Audio(audioBase + "nhac-nen-ban-dem.mp3");
-
-const sounds = {
-    warning: new Audio(audioBase + "nhac-canh-bao.mp3"),
-    correct: new Audio(audioBase + "am-thanh-dung.mp3"),
-    wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
-    win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
-};
-
-bgDay.loop = true;
-bgNight.loop = true;
-bgDay.volume = 0.25;
-bgNight.volume = 0.25;
-
-let currentBg = null;
-let activeSound = null;
-
-function playBackground(type) {
-    if (!soundEnabled) return;
-
-    bgDay.pause();
-    bgNight.pause();
-
-    currentBg = type === "day" ? bgDay : bgNight;
-    currentBg.currentTime = 0;
-    currentBg.play().catch(() => {});
-}
-
-function playEffect(type) {
-    if (!soundEnabled) return;
-
-    if (activeSound) {
-        activeSound.pause();
-        activeSound.currentTime = 0;
-    }
-
-    const sound = sounds[type];
-    if (!sound) return;
-
-    activeSound = sound;
-
-    if (currentBg) currentBg.volume = 0.08;
-
-    sound.currentTime = 0;
-    sound.play().catch(() => {});
-
-    sound.onended = () => {
-        if (currentBg && soundEnabled) currentBg.volume = 0.25;
-        activeSound = null;
-    };
-}
-
-function stopAllAudio() {
-    bgDay.pause();
-    bgNight.pause();
-
-    Object.values(sounds).forEach(sound => {
-        sound.pause();
-        sound.currentTime = 0;
-    });
-
-    currentBg = null;
-    activeSound = null;
-}
-
 function openSettings(){
     if(!started || gamePaused) return;
-
     gamePaused = true;
     stopTimer();
     $("settingsPanel").style.display = "flex";
@@ -873,7 +792,6 @@ function openSettings(){
 function closeSettings(){
     $("settingsPanel").style.display = "none";
     gamePaused = false;
-
     if(started && phase === "outbound" && !busy){
         startTimer();
     }
@@ -904,16 +822,19 @@ $("restartBtn").addEventListener("click", function(){
 $("homeBtn").addEventListener("click", function(){
     location.reload();
 });
+
 $("start").addEventListener("click",startGame);
+
 $("left").addEventListener("click",()=>{
     if(phase==="return"){
         if(!started||busy||jumping||falling)return;
-       lane=Math.max(0,lane-1);
-penguin.position.x=laneX[lane];
+        lane=Math.max(0,lane-1);
+        penguin.position.x=laneX[lane];
     }else{
         move(-1);
     }
 });
+
 $("right").addEventListener("click",()=>{
     if(phase==="return"){
         if(!started||busy||jumping||falling)return;
@@ -923,14 +844,18 @@ $("right").addEventListener("click",()=>{
         move(1);
     }
 });
+
 $("up").addEventListener("click",()=>{
 if(phase==="return"){if(!busy&&!jumping){penguin.position.z-=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}}
 else jump();
 });
+
 $("down").addEventListener("click",()=>{
 if(phase==="return"&&!busy&&!jumping){penguin.position.z+=.5;if(fishBucket.visible)fishBucket.position.z=penguin.position.z}
 });
+
 $("jump").addEventListener("click",jump);
+
 addEventListener("keydown",e=>{
 if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," "].includes(e.key))e.preventDefault();
 if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A")move(-1);
@@ -944,6 +869,7 @@ if(phase==="return"&&!busy&&!jumping){penguin.position.z+=.5;if(fishBucket.visib
 }
 if(e.key===" "||e.key==="Enter")jump();
 });
+
 init();
 })();
 </script>
