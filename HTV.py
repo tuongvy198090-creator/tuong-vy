@@ -739,6 +739,59 @@ const sounds = {
     wrong: new Audio(audioBase + "am-thanh-sai.mp3"),
     win: new Audio(audioBase + "nhac-chuc-mung-chien-thang.mp3")
 };
+bgDay.loop = true;
+bgNight.loop = true;
+bgDay.volume = 0.25;
+bgNight.volume = 0.25;
+
+let currentBg = null;
+let activeSound = null;
+
+function playBackground(type) {
+    if (!soundEnabled) return;
+    bgDay.pause();
+    bgNight.pause();
+
+    currentBg = type === "day" ? bgDay : bgNight;
+    currentBg.currentTime = 0;
+    currentBg.play().catch(() => {});
+}
+
+function playEffect(type) {
+    if (!soundEnabled) return;
+
+    if (activeSound) {
+        activeSound.pause();
+        activeSound.currentTime = 0;
+    }
+
+    const sound = sounds[type];
+    if (!sound) return;
+
+    activeSound = sound;
+    if (currentBg) currentBg.volume = 0.08;
+
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+
+    sound.onended = () => {
+        if (currentBg && soundEnabled) currentBg.volume = 0.25;
+        activeSound = null;
+    };
+}
+
+function stopAllAudio() {
+    bgDay.pause();
+    bgNight.pause();
+
+    Object.values(sounds).forEach(sound => {
+        sound.pause();
+        sound.currentTime = 0;
+    });
+
+    currentBg = null;
+    activeSound = null;
+}
 
 // ===== HỆ THỐNG ÂM THANH =====
 const audioBase = "/app/static/audio/";
